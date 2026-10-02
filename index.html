@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>claude-gdrive</title>
+<style>
+  :root { --fg: #1a1a1a; --mute: #555; --bg: #ffffff; --link: #1b5e20; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e8e8e8; --mute: #aaa; --bg: #161616; --link: #81c784; } }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.65 system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px; }
+  h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+  p.sub { color: var(--mute); margin-top: 0; }
+  a { color: var(--link); }
+  footer { margin-top: 48px; color: var(--mute); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>claude-gdrive</h1>
+  <p class="sub">A personal tool for publishing files to my own Google Drive</p>
+
+  <p>claude-gdrive is a small command-line tool that runs on the owner's own computer. It does three things
+  with the owner's Google account:</p>
+  <ol>
+    <li>uploads a local file (usually a presentation PDF) to a folder in the owner's Google Drive, or replaces
+        the content of a file it uploaded earlier so the share link stays the same;</li>
+    <li>sets that file to “anyone with the link can view” (never edit);</li>
+    <li>writes the link into a cell of a Google Sheet the owner chooses.</li>
+  </ol>
+  <p>It is not a hosted service. There is no server, and no one else's account is used.</p>
+
+  <p><a href="privacy.html">Privacy policy</a></p>
+
+  <footer>Maintained by <a href="https://github.com/kangdacool">github.com/kangdacool</a></footer>
+</main>
+</body>
+</html>
