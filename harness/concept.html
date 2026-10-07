@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>하네스의 개념 · HarnessBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#0b0f17">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .steps li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:15px;line-height:1.55;transition:border-color .2s,background .2s}
+  .steps li .st{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:800;color:#fff;margin-top:1px}
+  .steps li.ok .st{background:var(--ok)} .steps li.warn .st{background:var(--warn)} .steps li.no .st{background:var(--bad)}
+  .steps li.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--border))}
+  .steps li.no{border-color:color-mix(in srgb,var(--bad) 45%,var(--border))}
+  .steps li small{display:block;color:var(--text-dim);font-size:13.5px}
+  .layer{cursor:pointer;transition:opacity .2s}
+  .layer:hover{opacity:.9}
+  .binrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  @media (max-width:640px){.binrow{grid-template-columns:1fr}}
+  .toolrow{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 01</div>
+  <h1>하네스의 개념</h1>
+  <p class="lead">코딩 에이전트에게 일을 맡기면 파일이 열리고, 코드가 고쳐지고, 테스트가 돈다. 이 일을 모두 모델이 하는 것처럼 보이지만, 모델은 다음 토큰을 내놓을 뿐이다. 파일을 실제로 여는 것, 무엇을 읽힐지 고르는 것, 위험한 명령을 막는 것, 결과를 확인하는 것은 모델 바깥의 장치가 한다. 이 장에서는 그 바깥 장치 전체를 <b>하네스(harness)</b>라고 부르고, 여섯 구성요소로 나누어 본다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>에이전트 = 모델 + 하네스라는 정의를 설명하고, 하네스의 대표 구성요소 여섯 가지를 말할 수 있다.</li>
+      <li>도구가 기본으로 주는 부분(도구 실행·권한·문맥 불러오기)과 사용자가 더하는 부분(규칙·스킬·훅·검사 도구)을 구분할 수 있다.</li>
+      <li>프롬프트 엔지니어링 ⊂ 컨텍스트 엔지니어링 ⊂ 하네스 엔지니어링의 포함 관계를 설명할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>에이전트 = 모델 + 하네스</h2>
+  <p>정의는 Böckeler(2026)를 따른다. 하네스는 <b>코딩 에이전트에서 모델을 뺀 모든 것</b>이다. 모델은 Claude나 GPT 같은 대규모 언어모델(LLM)이고, 하네스는 그 모델이 실제 작업을 하도록 둘러싼 나머지 전부다. Claude Code, Codex 같은 도구가 대표적인 하네스다.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 820 340" style="width:100%" role="img" aria-label="모델과 하네스 구성요소 분해도">
+      <defs><radialGradient id="cg1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></radialGradient></defs>
+      <rect x="230" y="20" width="360" height="300" rx="150" fill="var(--accent-soft)" stroke="var(--accent)" stroke-dasharray="5 6"/>
+      <text x="410" y="48" text-anchor="middle" fill="var(--accent)" font-family="var(--mono)" font-size="12" letter-spacing="3">HARNESS</text>
+      <circle cx="410" cy="170" r="62" fill="url(#cg1)"/>
+      <text x="410" y="166" text-anchor="middle" fill="#fff" font-weight="800" font-size="21">모델</text>
+      <text x="410" y="190" text-anchor="middle" fill="#fff" font-family="var(--mono)" font-size="12">LLM</text>
+      <g font-size="14" font-weight="700">
+        <g><rect x="20" y="40" width="170" height="52" rx="10" fill="var(--bg-elev)" stroke="var(--accent)"/><text x="105" y="71" text-anchor="middle" class="svgtext">도구 실행</text></g>
+        <g><rect x="20" y="144" width="170" height="52" rx="10" fill="var(--bg-elev)" stroke="var(--accent)"/><text x="105" y="175" text-anchor="middle" class="svgtext">권한</text></g>
+        <g><rect x="20" y="248" width="170" height="52" rx="10" fill="var(--bg-elev)" stroke="var(--accent)"/><text x="105" y="279" text-anchor="middle" class="svgtext">문맥 불러오기</text></g>
+        <g><rect x="630" y="40" width="170" height="52" rx="10" fill="var(--bg-elev)" stroke="var(--accent-2)"/><text x="715" y="71" text-anchor="middle" class="svgtext">규칙·스킬</text></g>
+        <g><rect x="630" y="144" width="170" height="52" rx="10" fill="var(--bg-elev)" stroke="var(--accent-2)"/><text x="715" y="175" text-anchor="middle" class="svgtext">훅</text></g>
+        <g><rect x="630" y="248" width="170" height="52" rx="10" fill="var(--bg-elev)" stroke="var(--accent-2)"/><text x="715" y="279" text-anchor="middle" class="svgtext">검사 도구</text></g>
+      </g>
+      <g stroke="var(--border)" stroke-width="1.5">
+        <line x1="190" y1="66" x2="350" y2="140"/><line x1="190" y1="170" x2="348" y2="170"/><line x1="190" y1="274" x2="350" y2="200"/>
+        <line x1="630" y1="66" x2="470" y2="140"/><line x1="630" y1="170" x2="472" y2="170"/><line x1="630" y1="274" x2="470" y2="200"/>
+      </g>
+      <text x="105" y="326" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">도구가 기본 제공</text>
+      <text x="715" y="326" text-anchor="middle" fill="var(--accent-2)" font-size="13" font-weight="700">사용자가 더하는 부분</text>
+    </svg>
+    <figcaption><b>그림 1-1.</b> 에이전트의 분해도. 가운데 모델을 바깥 고리의 여섯 구성요소가 둘러싼다. 왼쪽 셋(도구 실행·권한·문맥 불러오기)은 Claude Code·Codex 같은 도구가 기본으로 주고, 오른쪽 셋(규칙·스킬·훅·검사 도구)은 사용자가 자기 작업에 맞게 더한다.</figcaption>
+  </figure>
+
+  <div class="tblwrap">
+    <table class="tbl">
+      <thead><tr><th style="width:26%">구성요소</th><th>설명</th><th style="width:28%">예</th></tr></thead>
+      <tbody>
+        <tr><td><b>도구 실행</b></td><td>모델이 직접 하는 일 (파일·명령)</td><td class="mono dim">Read · Edit · Bash</td></tr>
+        <tr><td><b>규칙·스킬</b></td><td>모델이 읽는 작업 설명서</td><td class="mono dim">CLAUDE.md · SKILL.md</td></tr>
+        <tr><td><b>검사 도구</b></td><td>결과물을 확인하는 테스트</td><td class="mono dim">테스트 · 정규식 검사</td></tr>
+        <tr><td><b>훅</b></td><td>도구 실행 전후 자동 스크립트</td><td class="mono dim">명령 차단 · 알림</td></tr>
+        <tr><td><b>권한</b></td><td>도구를 바로 쓸지, 물어볼지</td><td class="mono dim">허용 · 확인 · 거부</td></tr>
+        <tr><td><b>문맥 불러오기</b></td><td>필요한 파일을 입력에 넣기</td><td class="mono dim">파일 첨부 · 검색</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="t">규칙과 스킬의 차이</div>
+    규칙은 매번 읽는 규칙 문서(CLAUDE.md 등)이고, 스킬은 해당 작업을 할 때만 불러 읽는 지침이다. 둘 다 모델이 읽는 설명서라는 점은 같지만, 문맥에 머무는 시간이 다르다. 이 차이는 2장의 문맥 길이 문제와 바로 이어진다.
+  </div>
+
+  <h2 id="s2"><span class="num">02</span>구성요소를 하나씩 빼 보기</h2>
+  <p>여섯 구성요소가 각각 무슨 일을 하는지는 하나씩 빼 보면 분명해진다. 아래 실험의 과제는 “R 스크립트의 버그를 연구실 규칙대로 고치고 확인하기”다. 스위치를 끄면 그 구성요소가 맡던 단계가 어떻게 바뀌는지 보자. 모두 끄면 남는 것은 글로 답하는 모델뿐이다.</p>
+
+  <div class="sim" id="sim-remove">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">에이전트 분해 실험: 구성요소별 역할</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <ol class="steps" id="stepList"></ol>
+      </div>
+      <div class="sim-ctrl">
+        <div class="dim" style="font-size:13px;margin-bottom:6px">도구가 기본 제공</div>
+        <label class="toggle"><input type="checkbox" data-c="tool" checked> 도구 실행</label>
+        <label class="toggle"><input type="checkbox" data-c="perm" checked> 권한</label>
+        <label class="toggle"><input type="checkbox" data-c="ctx" checked> 문맥 불러오기</label>
+        <div class="dim" style="font-size:13px;margin:14px 0 6px">사용자가 더하는 부분</div>
+        <label class="toggle"><input type="checkbox" data-c="rule" checked> 규칙·스킬</label>
+        <label class="toggle"><input type="checkbox" data-c="hook" checked> 훅</label>
+        <label class="toggle"><input type="checkbox" data-c="test" checked> 검사 도구</label>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn sm" id="allOff">모두 끄기</button>
+          <button class="btn sm" id="baseOnly">기본 제공만</button>
+          <button class="btn sm" id="allOn">모두 켜기</button>
+        </div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">켜진 구성요소</div><div class="v" id="stOn">6 / 6</div></div>
+      <div><div class="k">완료 단계</div><div class="v" id="stOk" style="color:var(--ok)">6</div></div>
+      <div><div class="k">불확실 단계</div><div class="v" id="stWarn" style="color:var(--warn)">0</div></div>
+      <div><div class="k">불가 단계</div><div class="v" id="stNo" style="color:var(--bad)">0</div></div>
+    </div>
+    <div class="sim-foot" id="remFoot"></div>
+  </div>
+
+  <p>“기본 제공만” 버튼을 눌러 보면 흥미로운 상태가 나온다. 파일을 읽고 고치는 일은 되지만, 연구실 규칙은 반영되지 않고, 금지된 명령도 막히지 않으며, 고친 결과가 맞는지 아무도 확인하지 않는다. 기성품 하네스를 설치한 직후가 대체로 이 상태다. 이 교재의 나머지는 오른쪽 세 스위치, 즉 사용자가 더하는 부분을 어떻게 설계하고 다듬을지에 관한 이야기다.</p>
+
+  <h2 id="s3"><span class="num">03</span>용어의 확장</h2>
+  <p>하네스 엔지니어링은 갑자기 나온 말이 아니다. 한 번의 지시문을 다듬던 기술이, 모델이 보는 입력 전체를 고르는 기술로, 다시 모델 밖의 모든 장치를 설계하는 기술로 넓어졌다. 세 단계는 앞의 것을 감싸며 넓어진 것이고, 컨텍스트는 하네스의 일부다.</p>
+
+  <div class="sim" id="sim-layers">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">세 겹의 엔지니어링: 고리를 눌러 범위 보기</span></div>
+    <div class="sim-body">
+      <div class="sim-view" style="display:flex;justify-content:center">
+        <svg id="layerSvg" viewBox="0 0 420 340" style="width:100%;max-width:440px"></svg>
+      </div>
+      <div class="sim-ctrl">
+        <div id="layerInfo" style="font-size:15px;line-height:1.65"></div>
+      </div>
+    </div>
+  </div>
+
+  <p>고리 사이의 경계를 몸으로 익히는 가장 빠른 방법은 실제 작업을 분류해 보는 것이다. 아래 카드는 모두 에이전트를 잘 쓰기 위한 작업이다. 각 카드를 <b>그 작업을 처음 포함하는 가장 안쪽 고리</b>로 옮겨 보자. 끌어서 놓거나, 카드를 누른 뒤 상자를 눌러도 된다.</p>
+
+  <div class="sim" id="sim-sort">
+    <div class="sim-head"><span class="pill game">GAME</span><span class="title">작업별 고리 분류</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="pool">
+        <span class="token" data-cat="p">지시문 문장을 더 분명하게 고치기</span>
+        <span class="token" data-cat="p">답의 형식 예시를 지시문에 넣기</span>
+        <span class="token" data-cat="c">어떤 파일을 입력에 넣을지 고르기</span>
+        <span class="token" data-cat="c">긴 대화를 요약해 다시 넣기</span>
+        <span class="token" data-cat="c">스킬을 필요할 때만 불러오기</span>
+        <span class="token" data-cat="h">금지된 명령을 훅으로 막기</span>
+        <span class="token" data-cat="h">저장 전에 자동 검사 돌리기</span>
+        <span class="token" data-cat="h">명령마다 실행 권한 정하기</span>
+      </div>
+      <div class="binrow">
+        <div class="bin" data-cat="p"><div class="bt">프롬프트 엔지니어링</div><div class="items"></div></div>
+        <div class="bin" data-cat="c"><div class="bt">컨텍스트 엔지니어링</div><div class="items"></div></div>
+        <div class="bin" data-cat="h"><div class="bt">하네스 엔지니어링</div><div class="items"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn sm primary" data-check>채점</button><button class="btn sm" data-reset>다시</button><span data-out class="dim" style="font-size:14px"></span>
+      </div>
+    </div></div>
+  </div>
+
+  <h2 id="s4"><span class="num">04</span>이미 쓰고 있는 하네스</h2>
+  <p>아래 도구 가운데 하나라도 쓰고 있다면, 이미 하네스를 쓰고 있는 것이다. 어떤 모델을 쓰든, 모델이 파일을 열고 명령을 실행하게 해 주는 부분은 이 도구들이 맡는다.</p>
+  <div class="toolrow"><span class="chip">Claude Code</span><span class="chip">Codex</span><span class="chip">Cursor</span><span class="chip">Gemini CLI</span><span class="chip">Kiro (AWS)</span></div>
+  <p class="dim" style="font-size:15px">Kiro는 AWS의 에이전트 코딩 도구(IDE·CLI)로, 2026년 5월 Amazon Q Developer를 대체했다.</p>
+  <p>기성품 하네스는 도구 실행, 권한, 문맥 불러오기를 기본으로 준다. 규칙·스킬, 훅, 검사 도구는 비어 있거나 최소한으로만 들어 있고, 여기에 무엇을 더할지는 사용자의 몫이다. 다음 장은 가장 쉬운 방법, 즉 규칙을 글로 많이 적어 넣는 방법이 어디서 한계에 부딪히는지 본다.</p>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q1</span>Böckeler(2026)의 정의에 따르면 하네스는 무엇인가?</div>
+    <div class="opts">
+      <button class="opt">모델에게 주는 한 번의 지시문</button>
+      <button class="opt">모델이 보는 토큰 전체</button>
+      <button class="opt">코딩 에이전트에서 모델을 뺀 모든 것</button>
+      <button class="opt">모델을 학습시키는 데이터와 코드</button>
+    </div>
+    <div class="exp">하네스는 모델을 제외한 나머지 전부다. 지시문은 프롬프트, 토큰 전체는 컨텍스트이며 둘 다 하네스 안에 포함된다.</div>
+  </div>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q2</span>다음 중 사용자가 직접 더하는 부분에 해당하는 것은?</div>
+    <div class="opts">
+      <button class="opt">파일을 읽고 쓰는 도구 실행</button>
+      <button class="opt">도구 실행 전후에 도는 훅</button>
+      <button class="opt">명령을 바로 실행할지 묻는 권한</button>
+      <button class="opt">파일을 입력에 넣는 문맥 불러오기</button>
+    </div>
+    <div class="exp">도구 실행·권한·문맥 불러오기는 Claude Code·Codex 같은 도구가 기본으로 준다. 규칙·스킬·훅·검사 도구는 사용자가 작업에 맞게 더한다.</div>
+  </div>
+  <div class="quiz" data-ans="3">
+    <div class="q"><span class="qn">Q3</span>“스킬을 필요할 때만 불러오기”는 어느 고리에 처음 포함되는가?</div>
+    <div class="opts">
+      <button class="opt">프롬프트 엔지니어링</button>
+      <button class="opt">하네스 엔지니어링에만 해당</button>
+      <button class="opt">어느 고리에도 속하지 않음</button>
+      <button class="opt">컨텍스트 엔지니어링</button>
+    </div>
+    <div class="exp">모델이 보는 토큰을 무엇으로 채울지 고르는 일이므로 컨텍스트 엔지니어링이다. 컨텍스트는 하네스에 포함되므로 하네스 엔지니어링이기도 하지만, 처음 포함하는 가장 안쪽 고리는 컨텍스트다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+/* ---------- removal experiment ---------- */
+(function(){
+  const STEPS = [
+    {t:'관련 파일을 찾아 입력에 넣는다', need:'ctx', off:'no', offMsg:'파일 내용을 모르는 채로 일반론만 답함'},
+    {t:'연구실 규칙대로 고칠 방향을 정한다', need:'rule', off:'warn', offMsg:'일반적인 방식으로 고침, 연구실 고유 규칙은 반영되지 않음'},
+    {t:'스크립트 파일을 실제로 수정한다', need:'tool', off:'no', offMsg:'수정안을 글로만 제시, 사람이 직접 옮겨 붙여야 함'},
+    {t:'명령 실행 전 승인 여부를 정한다', need:'perm', off:'warn', offMsg:'어떤 명령을 바로 실행하고 어떤 명령을 물어볼지 기준이 없음'},
+    {t:'금지된 명령 방식을 자동으로 막는다', need:'hook', off:'warn', offMsg:'규칙에 금지라고 적혀 있어도 실행되면 막을 장치가 없음'},
+    {t:'테스트로 결과를 확인한다', need:'test', off:'warn', offMsg:'“고쳤다”는 답만 남고 실제로 맞는지는 확인되지 않음'}
+  ];
+  const DEP = {tool:['ctx'], test:['tool'], hook:['tool'], perm:['tool']};
+  const boxes=[...document.querySelectorAll('#sim-remove input[data-c]')];
+  const list=document.getElementById('stepList'), foot=document.getElementById('remFoot');
+  function on(c){return boxes.find(b=>b.dataset.c===c).checked}
+  function draw(){
+    let ok=0,w=0,n=0;
+    list.innerHTML='';
+    STEPS.forEach((s,i)=>{
+      let st = on(s.need)?'ok':s.off, msg='';
+      if(st==='ok' && DEP[s.need] && DEP[s.need].some(d=>!on(d))){
+        st='no'; msg = s.need==='tool'?'파일을 열 수 없어 수정할 대상이 없음':'고친 파일이 없어 이 단계가 의미를 잃음';
+      }
+      if(st!=='ok' && !msg) msg=s.offMsg;
+      if(st==='ok')ok++; else if(st==='warn')w++; else n++;
+      const li=document.createElement('li'); li.className=st+' fadein';
+      li.innerHTML=`<span class="st">${st==='ok'?'✓':st==='warn'?'!':'×'}</span><div>${i+1}. ${s.t}${msg?`<small>${msg}</small>`:''}</div>`;
+      list.appendChild(li);
+    });
+    const cnt=boxes.filter(b=>b.checked).length;
+    document.getElementById('stOn').textContent=cnt+' / 6';
+    document.getElementById('stOk').textContent=ok;document.getElementById('stWarn').textContent=w;document.getElementById('stNo').textContent=n;
+    const userOn = ['rule','hook','test'].filter(on).length;
+    foot.innerHTML = cnt===0 ? '<b>모델만 남은 상태</b>: 질문에 글로 답하는 챗봇과 같다.'
+      : (userOn===0 && ['tool','perm','ctx'].every(on)) ? '<b>기성품 하네스를 막 설치한 상태</b>: 일은 하지만 규칙 반영, 금지 명령 차단, 결과 확인이 비어 있다.'
+      : cnt===6 ? '<b>여섯 구성요소가 모두 켜진 상태</b>: 각 단계를 맡은 장치가 있다. 단, 규칙이 실제로 지켜지는지는 2장에서 따로 본다.'
+      : `켜진 구성요소 ${cnt}개. 꺼진 스위치가 맡던 단계가 노랑(불확실) 또는 빨강(불가)으로 바뀌었다.`;
+  }
+  boxes.forEach(b=>b.addEventListener('change',draw));
+  const set=f=>()=>{boxes.forEach(b=>b.checked=f(b.dataset.c));draw()};
+  document.getElementById('allOff').onclick=set(()=>false);
+  document.getElementById('allOn').onclick=set(()=>true);
+  document.getElementById('baseOnly').onclick=set(c=>['tool','perm','ctx'].includes(c));
+  draw();
+})();
+
+/* ---------- layers ---------- */
+(function(){
+  const {S}=HB; const svg=document.getElementById('layerSvg'), info=document.getElementById('layerInfo');
+  const L=[
+    {k:'하네스 엔지니어링', en:'Harness engineering', r:160, col:'var(--accent-2)', src:'Böckeler 2026', d:'모델 밖 전부를 설계한다. 문맥에 더해 도구, 권한, 훅, 자동 검사까지.', ex:['금지 명령을 훅으로 차단','저장 전 자동 검사','실행 권한 설정']},
+    {k:'컨텍스트 엔지니어링', en:'Context engineering', r:110, col:'var(--accent)', src:'Anthropic 2025', d:'모델이 보는 토큰 전체를 고른다. 무엇을 넣고 무엇을 빼고 언제 불러올지.', ex:['입력할 파일 고르기','긴 대화 요약','스킬 필요 시 불러오기']},
+    {k:'프롬프트 엔지니어링', en:'Prompt engineering', r:58, col:'var(--blue)', src:'Liu 외 2023', d:'한 번의 지시문을 다듬는다. 문장, 예시, 형식 지정.', ex:['지시문 문장 다듬기','형식 예시 넣기']}
+  ];
+  const cx=210, cy=172; const els=[];
+  L.forEach((l,i)=>{
+    const g=S('g',{class:'layer',tabindex:0,role:'button'},svg);
+    const c=S('circle',{cx,cy,r:l.r,fill:l.col,'fill-opacity':.1,stroke:l.col,'stroke-width':1.6},g);
+    const ty = i===2? cy+5 : cy-l.r+24;
+    S('text',{x:cx,y:ty,'text-anchor':'middle','font-size':i===2?13:14,'font-weight':800,fill:l.col},g).textContent=i===2?'프롬프트':l.k.replace(' 엔지니어링','');
+    g.addEventListener('click',e=>{e.stopPropagation();pick(i)});
+    g.addEventListener('keydown',e=>{if(e.key==='Enter')pick(i)});
+    els.push(c);
+  });
+  function pick(i){
+    els.forEach((c,j)=>{c.setAttribute('fill-opacity', j===i?.28:(j<i?.06:.1)); c.setAttribute('stroke-width', j===i?3:1.4)});
+    const l=L[i];
+    info.innerHTML=`<div class="eyebrow" style="color:${l.col}">${l.en}</div><div style="font-size:19px;font-weight:800;margin:4px 0 6px">${l.k}</div><div class="dim">${l.d}</div>
+      <div style="margin-top:10px">${l.ex.map(e=>`<span class="tag" style="margin:3px 4px 3px 0">${e}</span>`).join('')}</div>
+      <div class="faint mono" style="font-size:12.5px;margin-top:10px">${l.src}</div>
+      <div class="faint" style="font-size:13px;margin-top:8px">${i===0?'안쪽 두 고리를 모두 포함':i===1?'프롬프트를 포함하고, 하네스에 포함됨':'가장 안쪽 고리'}</div>`;
+  }
+  pick(1);
+})();
+
+HB.sorter(document.getElementById('sim-sort'));
+</script>
+</body>
+</html>

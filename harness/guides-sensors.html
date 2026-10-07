@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>가이드와 센서 · HarnessBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#0b0f17">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  canvas#flow{width:100%;height:auto;aspect-ratio:1000/520;display:block;border-radius:10px;background:var(--surface)}
+  .runs{display:grid;grid-template-columns:minmax(150px,1.4fr) repeat(10,1fr);gap:3px;font-size:13px;align-items:center}
+  .runs .h{font-family:var(--mono);font-size:11px;color:var(--text-faint);text-align:center}
+  .runs .lab{font-size:13.5px;padding-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .runs .c{height:24px;border-radius:4px;background:var(--surface-2)}
+  .runs .c.f{background:var(--bad)} .runs .c.p{background:var(--ok);opacity:.7}
+  .runs .c.pending{background:var(--surface-2)}
+  .m2{display:grid;grid-template-columns:110px 1fr 1fr;gap:8px}
+  .m2 .hd{font-weight:800;text-align:center;padding:8px;font-size:15px}
+  .m2 .rl{display:flex;flex-direction:column;justify-content:center;font-weight:800;font-size:15px}
+  .m2 .rl small{font-weight:500;color:var(--text-faint);font-size:12px}
+  .m2 .bin{min-height:110px}
+  @media (max-width:640px){.m2{grid-template-columns:70px 1fr 1fr}.m2 .rl{font-size:13px}}
+  .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative;margin:10px 0 6px}
+  .timeline:before{content:"";position:absolute;left:10%;right:10%;top:21px;height:2px;background:var(--border)}
+  .tl{text-align:center;position:relative;cursor:pointer;padding:0 4px}
+  .tl .dot{width:42px;height:42px;border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;background:var(--bg-elev);border:2px solid var(--border);color:var(--text-dim);transition:all .2s;position:relative;z-index:1}
+  .tl.on .dot{border-color:var(--accent);color:#fff;background:var(--accent)}
+  .tl.done .dot{border-color:var(--accent);color:var(--accent)}
+  .tl .t{font-size:13.5px;font-weight:700}
+  .tl .d{font-family:var(--mono);font-size:11.5px;color:var(--text-faint)}
+  @media (max-width:640px){.tl .t{font-size:12px}}
+  .tlbox{margin-top:14px;padding:14px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--border);min-height:88px;font-size:15px}
+  .rulelist{display:grid;gap:5px;font-size:13px;margin-top:10px}
+  .rulelist div{display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:6px;background:var(--surface)}
+  .rulelist div.hit{background:var(--bad-soft);color:var(--bad)}
+  .rulelist code{font-size:11.5px}
+  .batch{display:grid;gap:6px;margin-top:10px}
+  .batch div{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-radius:8px;background:var(--surface);font-size:14px}
+  .batch .ok{color:var(--ok);font-family:var(--mono);font-size:12.5px} .batch .ng{color:var(--bad);font-family:var(--mono);font-size:12.5px}
+  .big-verdict{font-family:var(--mono);font-size:18px;font-weight:800;padding:12px 14px;border-radius:10px;margin-top:10px}
+  .big-verdict.pass{background:var(--ok-soft);color:var(--ok)} .big-verdict.fail{background:var(--bad-soft);color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 03</div>
+  <h1>가이드와 센서</h1>
+  <p class="lead">2장의 결론은 글로 된 지시만으로는 결과가 보장되지 않는다는 것이었다. 그렇다면 출력이 나온 뒤에 확인하는 장치를 두면 된다. Böckeler(2026)는 하네스의 장치를 두 축으로 나눈다. 모델이 출력하기 <b>전</b>에 작동하느냐 <b>후</b>에 작동하느냐(가이드와 센서), 그리고 결정론적 계산으로 판정하느냐 모델의 추론으로 판정하느냐(계산형과 추론형)다. 이 장에서는 두 축을 실험으로 익히고, 실제 연구실 하네스를 그 틀에 넣어 본다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>가이드(feedforward)와 센서(feedback)를 모델 출력 전·후 기준으로 구분하고, 명령 차단 훅이 왜 센서인지 설명할 수 있다.</li>
+      <li>계산형과 추론형의 장단점(결정론·속도·비용 대 의미 판단·변동성)을 비교할 수 있다.</li>
+      <li>연구실 하네스의 구성요소를 2×2 틀에 분류할 수 있다.</li>
+      <li>조향 루프(steering loop)가 무엇이고, 반복된 실수가 가이드에서 센서로 옮겨 가는 과정을 사례로 설명할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>출력 전의 가이드, 출력 후의 센서</h2>
+  <p><b>가이드</b>는 모델이 행동하기 전에 방향을 잡아, 처음부터 좋은 결과가 나올 확률을 높인다. 규칙 문서, 스킬, 템플릿이 여기에 속한다. <b>센서</b>는 모델이 행동한 뒤 결과를 관찰하고, 모델이 스스로 고치도록 돕는다. 테스트, 훅, 검사 도구가 여기에 속한다.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 820 230" style="width:100%" role="img" aria-label="가이드, 모델 출력, 센서의 흐름">
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--text-faint)"/></marker></defs>
+      <rect x="20" y="40" width="220" height="120" rx="14" fill="var(--accent-soft)" stroke="var(--accent)"/>
+      <text x="130" y="76" text-anchor="middle" fill="var(--accent)" font-weight="800" font-size="18">가이드</text>
+      <text x="130" y="102" text-anchor="middle" class="svgdim" font-size="13.5">출력 전에 방향을 잡음</text>
+      <text x="130" y="132" text-anchor="middle" class="svgtext" font-size="13.5">규칙 문서 · 스킬 · 템플릿</text>
+      <rect x="300" y="50" width="220" height="100" rx="14" fill="var(--surface)" stroke="var(--border)"/>
+      <text x="410" y="90" text-anchor="middle" class="svgtext" font-weight="800" font-size="18">모델의 출력</text>
+      <text x="410" y="118" text-anchor="middle" class="svgdim" font-size="13.5">명령 · 코드 · 문서</text>
+      <rect x="580" y="40" width="220" height="120" rx="14" fill="var(--accent-2-soft)" stroke="var(--accent-2)"/>
+      <text x="690" y="76" text-anchor="middle" fill="var(--accent-2)" font-weight="800" font-size="18">센서</text>
+      <text x="690" y="102" text-anchor="middle" class="svgdim" font-size="13.5">출력 후 결과를 확인</text>
+      <text x="690" y="132" text-anchor="middle" class="svgtext" font-size="13.5">테스트 · 훅 · 검사 도구</text>
+      <g stroke="var(--text-faint)" stroke-width="1.6" fill="none" marker-end="url(#a3)">
+        <path d="M240 100 H297"/><path d="M520 100 H577"/><path d="M690 160 V200 H410 V153"/>
+      </g>
+      <text x="550" y="220" text-anchor="middle" class="svgdim" font-size="13">결과를 보고 수정</text>
+      <text x="130" y="24" text-anchor="middle" class="svgmono" font-size="12">feedforward</text>
+      <text x="690" y="24" text-anchor="middle" class="svgmono" font-size="12">feedback</text>
+    </svg>
+    <figcaption><b>그림 3-1.</b> 가이드와 센서. 기준은 모델의 출력 전·후다. 도구 실행 <i>전에</i> 명령을 막는 훅도, 모델이 낸 명령을 보고 반응하므로 센서다.</figcaption>
+  </figure>
+
+  <p>아래 시뮬레이터는 이 흐름을 단순화한 모델이다. 모델이 출력 200개를 차례로 내놓고, 그중 일부에는 실수가 섞인다. 가이드는 실수가 생기는 비율을 줄이고, 센서는 생긴 실수를 일정 비율로 잡아 모델에게 돌려보낸다. 슬라이더를 극단까지 움직여 보자. 특히 가이드만 최대로 올렸을 때 빠져나가는 실수가 0이 되는지 확인해 보자.</p>
+
+  <div class="sim" id="sim-flow">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">가이드·센서 파이프라인: 실수가 걸러지는 지점</span></div>
+    <div class="sim-body">
+      <div class="sim-view"><canvas id="flow" width="1000" height="520"></canvas>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin-top:8px" class="dim">
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ok);margin-right:5px"></i>정상 출력</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--warn);margin-right:5px"></i>센서가 잡아 되돌림</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bad);margin-right:5px"></i>빠져나간 실수</span>
+        </div>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">기본 실수율 <b id="fP0V"></b></div><input type="range" id="fP0" min="2" max="40" value="20"></label>
+        <label class="ctrl"><div class="lab">가이드가 줄이는 비율 <b id="fGV"></b></div><input type="range" id="fG" min="0" max="90" value="40"></label>
+        <label class="ctrl"><div class="lab">센서 탐지율 <b id="fSV"></b></div><input type="range" id="fS" min="0" max="100" value="0"></label>
+        <div class="ctrl"><div class="lab">센서 종류</div><div class="seg" id="fKind"><button data-v="comp" class="on">계산형</button><button data-v="inf">추론형</button></div></div>
+        <button class="btn sm" id="fRun" style="width:100%;justify-content:center">200개 다시 흘리기</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">처리한 출력</div><div class="v" id="fN">0</div></div>
+      <div><div class="k">생긴 실수</div><div class="v" id="fE">0</div></div>
+      <div><div class="k">센서가 잡음</div><div class="v" id="fC" style="color:var(--warn)">0</div></div>
+      <div><div class="k">빠져나감</div><div class="v" id="fX" style="color:var(--bad)">0</div></div>
+      <div><div class="k">기대 잔여율</div><div class="v" id="fR">-</div></div>
+    </div>
+    <div class="sim-foot" id="fFoot"></div>
+  </div>
+
+  <p>식으로 쓰면 단순하다. 기본 실수율을 p, 가이드가 줄이는 비율을 g, 센서 탐지율을 s라고 하면 최종적으로 빠져나가는 실수의 비율은 <code>p × (1 − g) × (1 − s)</code>다. 가이드만으로는 g가 1이 되지 않는 한 0에 닿지 않는다. 규칙 문서처럼 읽어도 준수가 보장되지 않는 가이드라면 g는 더 작다. 센서는 가이드가 놓친 몫에 곱해지는 두 번째 그물이다.</p>
+
+  <h2 id="s2"><span class="num">02</span>계산형과 추론형</h2>
+  <p>가이드와 센서는 각각 다시 두 방식으로 나뉜다.</p>
+  <div class="tblwrap">
+    <table class="tbl">
+      <thead><tr><th style="width:18%"></th><th>계산형 (computational)</th><th>추론형 (inferential)</th></tr></thead>
+      <tbody>
+        <tr><td><b>판정 방식</b></td><td>결정론적. 같은 입력이면 같은 결과</td><td>모델의 의미 판단. 실행마다 결과가 다를 수 있음</td></tr>
+        <tr><td><b>속도·비용</b></td><td>빠르고 저렴 (밀리초에서 초 단위)</td><td>느리고 비쌈</td></tr>
+        <tr><td><b>강점</b></td><td>규칙이 분명한 실수를 빠짐없이</td><td>정규식으로 쓸 수 없는 의미상의 문제</td></tr>
+        <tr><td><b>가이드 예</b></td><td>템플릿</td><td>규칙 문서</td></tr>
+        <tr><td><b>센서 예</b></td><td>테스트 · 정규식 검사</td><td>AI 검토</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>차이는 같은 검사를 여러 번 돌려 보면 드러난다. 아래는 발표덱 소제목 여섯 개를 두 센서로 각각 10번 검사하는 실험이다. 계산형은 실제 정규식으로 판정하고, 추론형은 항목마다 판정이 흔들리는 AI 검토를 확률로 흉내 낸다.</p>
+
+  <div class="sim" id="sim-repeat">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">같은 입력, 10번 검사: 계산형 대 추론형</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <div class="seg" id="rKind"><button data-v="comp" class="on">계산형: 정규식 검사</button><button data-v="inf">추론형: AI 검토</button></div>
+        <button class="btn sm primary" id="rGo">10번 실행</button>
+        <span class="faint" style="font-size:13px">빨강 = 걸림 · 초록 = 통과</span>
+      </div>
+      <div class="runs" id="rGrid"></div>
+    </div></div>
+    <div class="stats">
+      <div><div class="k">실행마다 판정이 바뀐 항목</div><div class="v" id="rFlip">-</div></div>
+      <div><div class="k">총 소요(예시)</div><div class="v" id="rTime">-</div></div>
+      <div><div class="k">총 비용(예시)</div><div class="v" id="rCost">-</div></div>
+    </div>
+    <div class="sim-foot" id="rFoot">두 센서를 번갈아 실행해 보세요. 다섯째 줄은 정규식에 걸리지 않는 구어 감상입니다.</div>
+  </div>
+
+  <h2 id="s3"><span class="num">03</span>실제 연구실 하네스 예시</h2>
+  <p>두 축을 겹치면 2×2 틀이 된다. 아래는 한 연구실이 덱과 문서를 만들 때 쓰는 하네스를 이 틀에 놓은 것이다. 왼쪽 열은 매번 같은 결과를 내고, 오른쪽 열은 모델의 해석에 달려 있다. 카드를 알맞은 칸으로 옮겨 보자.</p>
+
+  <div class="sim" id="sim-matrix">
+    <div class="sim-head"><span class="pill game">GAME</span><span class="title">연구실 하네스 2×2 분류</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="pool">
+        <span class="token" data-cat="cg">표·덱 템플릿 코드 (pptx_kit · docx_kit)</span>
+        <span class="token" data-cat="ig">연구실 규칙 문서 (CLAUDE.md)</span>
+        <span class="token" data-cat="ig">스킬 (SKILL.md)</span>
+        <span class="token" data-cat="ig">피드백 기록 (feedback)</span>
+        <span class="token" data-cat="cs">자동 검사 40종 (audit.py)</span>
+        <span class="token" data-cat="cs">빌드 게이트</span>
+        <span class="token" data-cat="cs">금지 명령 차단 훅</span>
+        <span class="token" data-cat="is">덱 검토 에이전트 (deck-review)</span>
+        <span class="token" data-cat="is">원고 검토 에이전트 (manuscript-audit)</span>
+      </div>
+      <div class="m2" style="margin-top:14px">
+        <div></div><div class="hd" style="color:var(--blue)">계산형</div><div class="hd" style="color:var(--accent)">추론형</div>
+        <div class="rl">가이드<small>출력 전</small></div>
+        <div class="bin" data-cat="cg"><div class="items"></div></div>
+        <div class="bin" data-cat="ig"><div class="items"></div></div>
+        <div class="rl">센서<small>출력 후</small></div>
+        <div class="bin" data-cat="cs"><div class="items"></div></div>
+        <div class="bin" data-cat="is"><div class="items"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn sm primary" data-check>채점</button><button class="btn sm" data-reset>다시</button><span data-out class="dim" style="font-size:14px"></span>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="callout pink"><div class="t">규칙 문서는 추론형 가이드</div>규칙 문서는 모델이 읽고 해석한다. 읽었다고 해서 준수가 보장되지 않는다. 2장의 238번 차단 기록이 그 사례다. 빌드 게이트는 덱·문서를 저장하기 전에 도는 자동 검사이고, 2026-10-05 기준 audit.py에 등록된 검사는 40개다.</div>
+
+  <h2 id="s4"><span class="num">04</span>조향 루프: 구어 라벨 사례</h2>
+  <p>가이드와 센서는 한 번 만들고 끝나는 것이 아니다. Böckeler는 사람의 역할을 하네스를 계속 고쳐 에이전트를 조종하는 일로 본다. 이것이 <b>조향 루프(steering loop)</b>다.</p>
+  <blockquote class="src">“Whenever an issue happens multiple times, the feedforward and feedback controls should be improved to make the issue less probable.”<cite>Böckeler B. Harness engineering for coding agent users. martinfowler.com, 2026</cite></blockquote>
+  <p>연구실 사례 하나를 따라가 보자. 발표덱 소제목이 질문이나 구어 말투로 나오는 실수다. 단계를 눌러 보자.</p>
+
+  <div class="sim" id="sim-loop">
+    <div class="sim-head"><span class="pill">TIMELINE</span><span class="title">구어 라벨 실수가 센서로 옮겨 간 과정</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="timeline" id="tl"></div>
+      <div class="tlbox" id="tlBox"></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" id="tlPrev">← 이전</button><button class="btn sm primary" id="tlNext">다음 →</button></div>
+    </div></div>
+  </div>
+
+  <p>마지막 단계에서 들어간 검사는 계산형 센서다. 아래는 그런 검사가 어떻게 생겼는지 보여 주는 예시 구현이다. 정규식 규칙 여덟 개로 소제목의 말투를 판정한다. 직접 소제목을 써 보고, 어떤 규칙이 반응하는지 확인해 보자.</p>
+
+  <div class="sim" id="sim-label">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">빌드 게이트의 라벨 검사: 예시 구현</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <input type="text" id="lIn" value="어떻게 조사했나" aria-label="소제목 입력">
+        <div class="big-verdict" id="lOut"></div>
+        <div class="rulelist" id="lRules"></div>
+      </div>
+      <div class="sim-ctrl">
+        <div class="dim" style="font-size:14px;margin-bottom:6px">한꺼번에 검사</div>
+        <div class="batch" id="lBatch"></div>
+        <div class="faint" style="font-size:12.5px;margin-top:10px">항목을 누르면 왼쪽 입력란으로 옮겨집니다.</div>
+      </div>
+    </div>
+    <div class="sim-foot">정규식은 빠르고 매번 같지만, 규칙에 없는 말투는 놓친다. “결과는 생각보다 훨씬 좋았음”을 넣어 보세요. 이런 빈틈이 추론형 센서(AI 검토)를 함께 두는 이유입니다.</div>
+  </div>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="3">
+    <div class="q"><span class="qn">Q1</span>도구 실행 직전에 금지된 명령을 막는 훅은 어디에 속하는가?</div>
+    <div class="opts">
+      <button class="opt">가이드: 도구 실행 전에 작동하므로</button>
+      <button class="opt">가이드: 규칙 문서와 같은 내용을 담으므로</button>
+      <button class="opt">어느 쪽도 아님</button>
+      <button class="opt">센서: 모델이 낸 명령을 보고 반응하므로</button>
+    </div>
+    <div class="exp">기준은 도구 실행이 아니라 모델의 출력 전·후다. 훅은 모델이 이미 출력한 명령을 관찰하고 반응하므로 센서다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q2</span>추론형 센서의 특징으로 옳은 것은?</div>
+    <div class="opts">
+      <button class="opt">의미 판단이 가능하지만 비싸고 실행마다 결과가 다를 수 있다</button>
+      <button class="opt">결정론적이어서 같은 입력에 항상 같은 결과를 낸다</button>
+      <button class="opt">출력 전에 방향을 잡는다</button>
+      <button class="opt">정규식으로 구현한다</button>
+    </div>
+    <div class="exp">AI 검토가 대표적인 추론형 센서다. 정규식으로 쓸 수 없는 문제를 잡지만 비용과 변동성이 따른다.</div>
+  </div>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q3</span>구어 라벨 사례에서 규칙 문서에 적은 뒤 일어난 일은?</div>
+    <div class="opts">
+      <button class="opt">이후 같은 실수가 다시 나오지 않았다</button>
+      <button class="opt">규칙 문서를 더 길게 고쳐 썼다</button>
+      <button class="opt">다른 덱에서 같은 말투가 재발했고, 같은 날 빌드 시 자동 검사를 넣었다</button>
+      <button class="opt">AI 검토 에이전트로 대체했다</button>
+    </div>
+    <div class="exp">9/29 규칙 문서에 적었지만 10/04 「어떻게 조사했나」가 재발했고, 같은 날 빌드 게이트에 라벨 검사가 들어갔다. 반복되면 가이드에서 센서로 옮겨 간다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+
+<script src="assets/common.js"></script>
+<script src="assets/labelcheck.js"></script>
+<script>
+function seg(id, cb){const el=document.getElementById(id);el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb&&cb(b.dataset.v)});return ()=>el.querySelector('.on').dataset.v}
+
+/* ---------- flow pipeline ---------- */
+(function(){
+  const cv=document.getElementById('flow'), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  let P0=.2,G=.4,SD=0, kind='comp';
+  let parts=[], spawned=0, N=200, stats={e:0,c:0,x:0,n:0}, last=0;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pct=v=>v+'%';
+  HB.bindRange('fP0',pct,v=>{P0=v/100;expect()});
+  HB.bindRange('fG',pct,v=>{G=v/100;expect()});
+  HB.bindRange('fS',pct,v=>{SD=v/100;expect()});
+  seg('fKind',v=>{kind=v;expect()});
+  function sDet(){ return kind==='inf' ? Math.min(1,Math.max(0,SD+(Math.random()-.5)*0.5)) : SD; }
+  function expect(){
+    const r=P0*(1-G)*(1-SD);
+    document.getElementById('fR').textContent=(100*r).toFixed(1)+'%';
+    const f=document.getElementById('fFoot');
+    if(SD===0 && G>=.85) f.innerHTML='<b>가이드를 최대로 올려도</b> 실수는 0이 되지 않는다. 남은 몫을 잡을 장치가 없다.';
+    else if(SD===0) f.innerHTML='센서가 꺼져 있다. 생긴 실수는 전부 결과물에 남는다. 센서 탐지율을 올려 보자.';
+    else if(kind==='inf') f.innerHTML='<b>추론형 센서</b>: 탐지율이 출력마다 흔들린다. 같은 설정으로 다시 흘려도 잡히는 수가 달라진다.';
+    else f.innerHTML=`<b>계산형 센서</b>: 탐지율이 고정돼 있다. 기대 잔여율 = ${(P0*100).toFixed(0)}% × ${(100-G*100).toFixed(0)}% × ${(100-SD*100).toFixed(0)}%.`;
+  }
+  function reset(){parts=[];spawned=0;stats={e:0,c:0,x:0,n:0};upd()}
+  document.getElementById('fRun').onclick=reset;
+  const X={guide:.28,model:.5,sensor:.74,end:.97};
+  function spawn(){
+    const err = Math.random()<P0*(1-G);
+    parts.push({x:.02,y:.2+Math.random()*.6,err,st:'go',vx:.0042+Math.random()*.0015,checked:false});
+    spawned++;
+  }
+  function upd(){document.getElementById('fN').textContent=stats.n;document.getElementById('fE').textContent=stats.e;document.getElementById('fC').textContent=stats.c;document.getElementById('fX').textContent=stats.x}
+  function col(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+  function frame(t){
+    if(spawned<N && t-last>45){spawn();last=t}
+    const c={bg:col('--surface'),ok:col('--ok'),warn:col('--warn'),bad:col('--bad'),acc:col('--accent'),acc2:col('--accent-2'),txt:col('--text-dim'),bd:col('--border')};
+    ctx.clearRect(0,0,W,H);
+    // gates
+    const gate=(x,label,color,sub)=>{ctx.fillStyle=color;ctx.globalAlpha=.14;ctx.fillRect(x*W-34,52,68,H-104);ctx.globalAlpha=1;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.strokeRect(x*W-34,52,68,H-104);ctx.fillStyle=color;ctx.font='700 26px Pretendard Variable, sans-serif';ctx.textAlign='center';ctx.fillText(label,x*W,38);ctx.font='20px JetBrains Mono, monospace';ctx.fillStyle=c.txt;ctx.fillText(sub,x*W,H-20)};
+    gate(X.guide,'가이드',c.acc,'g='+Math.round(G*100)+'%');
+    gate(X.model,'모델 출력',c.txt,'p='+Math.round(P0*100)+'%');
+    gate(X.sensor,'센서',SD>0?c.acc2:c.bd,'s='+Math.round(SD*100)+'%'+(kind==='inf'?'±':''));
+    ctx.fillStyle=c.txt;ctx.font='22px Pretendard Variable, sans-serif';ctx.textAlign='right';ctx.fillText('결과물',W-10,38);
+    parts.forEach(p=>{
+      if(p.st==='go'){
+        p.x+=reduce?p.vx*3:p.vx;
+        if(!p.counted && p.x>X.model){p.counted=true; if(p.err)stats.e++}
+        if(!p.checked && p.x>X.sensor){p.checked=true; if(p.err && Math.random()<sDet()){p.st='back';stats.c++}}
+        if(p.x>=X.end && !p.done){p.done=true;stats.n++; if(p.err)stats.x++; }
+      } else if(p.st==='back'){
+        p.x-=p.vx*1.4; if(p.x<=X.model){p.st='go';p.err=false;p.fixed=true;p.checked=true}
+      }
+      const color = p.st==='back'?c.warn : (p.err && p.x>X.model? c.bad : (p.fixed? c.warn : c.ok));
+      ctx.beginPath();ctx.arc(p.x*W,p.y*H,8,0,7);ctx.fillStyle=color;ctx.globalAlpha=p.fixed&&p.st==='go'?.7:1;ctx.fill();ctx.globalAlpha=1;
+    });
+    parts=parts.filter(p=>!(p.done && p.x>1.05));
+    parts.forEach(p=>{if(p.done)p.x+=0}); upd();
+    requestAnimationFrame(frame);
+  }
+  expect(); requestAnimationFrame(frame);
+})();
+
+/* ---------- repeat test ---------- */
+(function(){
+  const ITEMS=[
+    {k:'어떻게 조사했나', inf:.9},
+    {k:'조사 방법', inf:.04},
+    {k:'무엇을 쟀나', inf:.85},
+    {k:'참여자 특성', inf:.1},
+    {k:'결과는 생각보다 훨씬 좋았음', inf:.6},
+    {k:'측정된 효과', inf:.05}
+  ];
+  const grid=document.getElementById('rGrid'); const getKind=seg('rKind',()=>render(null));
+  function render(res){
+    grid.innerHTML='<div></div>'+Array.from({length:10},(_,i)=>`<div class="h">#${i+1}</div>`).join('');
+    ITEMS.forEach((it,r)=>{
+      grid.insertAdjacentHTML('beforeend',`<div class="lab" title="${it.k}">${it.k}</div>`);
+      for(let j=0;j<10;j++){const v=res?res[r][j]:null;grid.insertAdjacentHTML('beforeend',`<div class="c ${v===null?'pending':v?'f':'p'}"></div>`)}
+    });
+  }
+  function run(){
+    const k=getKind(); const res=ITEMS.map(it=>Array.from({length:10},()=>k==='comp'?!HB.labelCheck(it.k).ok:Math.random()<it.inf));
+    let cells=[...grid.querySelectorAll('.c')]; cells.forEach(c=>c.className='c pending');
+    let i=0; const flat=[]; for(let j=0;j<10;j++)for(let r=0;r<ITEMS.length;r++)flat.push([r,j]);
+    const step=()=>{for(let n=0;n<(k==='comp'?ITEMS.length:1)&&i<flat.length;n++,i++){const [r,j]=flat[i];cells[r*10+j].className='c '+(res[r][j]?'f':'p')} if(i<flat.length)setTimeout(step,k==='comp'?40:35);else done()};
+    const done=()=>{
+      const flips=res.filter(row=>row.some(v=>v!==row[0])).length;
+      document.getElementById('rFlip').textContent=flips+' / 6';
+      document.getElementById('rTime').textContent=k==='comp'?'0.01초':'약 4분';
+      document.getElementById('rCost').textContent=k==='comp'?'≈ 0':'모델 호출 60회';
+      document.getElementById('rFoot').innerHTML=k==='comp'?'<b>계산형</b>: 10번 모두 같은 판정. 대신 다섯째 줄의 구어 감상은 규칙에 없어 매번 통과한다.':'<b>추론형</b>: 다섯째 줄 같은 의미상의 문제를 잡기도 하지만, 같은 항목의 판정이 실행마다 바뀐다. 소요 시간과 비용 값은 설명을 위한 예시다.';
+    };
+    step();
+  }
+  document.getElementById('rGo').onclick=run; render(null);
+})();
+
+HB.sorter(document.getElementById('sim-matrix'));
+
+/* ---------- steering timeline ---------- */
+(function(){
+  const S=[
+    {t:'실수 발생',d:'9/29',b:'연구자가 받은 발표덱의 소제목이 질문·구어 말투로 나왔다.'},
+    {t:'연구자 지적',d:'9/29',b:'연구자가 덱을 직접 고치면서 소제목을 명사형으로 바꿨다.'},
+    {t:'규칙 추가',d:'9/29',b:'덱 규칙 문서에 “소제목은 명사형으로” 규칙을 적었다. 여기까지는 <b>추론형 가이드</b>다.'},
+    {t:'재발',d:'10/04',b:'다른 덱에서 「어떻게 조사했나」 같은 같은 말투가 다시 나왔다. 규칙 문서를 읽었지만 지켜지지 않았다.'},
+    {t:'검사로 이동',d:'10/04',b:'같은 날 빌드 게이트에 라벨 검사를 넣었다. 이제 이 실수는 저장 전에 <b>계산형 센서</b>가 잡는다.'}
+  ];
+  const tl=document.getElementById('tl'), box=document.getElementById('tlBox'); let cur=0;
+  S.forEach((s,i)=>{const d=document.createElement('div');d.className='tl';d.innerHTML=`<div class="dot">${i+1}</div><div class="t">${s.t}</div><div class="d">${s.d}</div>`;d.onclick=()=>go(i);tl.appendChild(d)});
+  function go(i){cur=Math.max(0,Math.min(S.length-1,i));[...tl.children].forEach((c,j)=>{c.classList.toggle('on',j===cur);c.classList.toggle('done',j<cur)});box.innerHTML=`<div class="eyebrow">${S[cur].d} · 단계 ${cur+1}</div><div style="margin-top:6px">${S[cur].b}</div>`;box.classList.remove('fadein');void box.offsetWidth;box.classList.add('fadein')}
+  document.getElementById('tlPrev').onclick=()=>go(cur-1); document.getElementById('tlNext').onclick=()=>go(cur+1); go(0);
+})();
+
+/* ---------- label checker ---------- */
+(function(){
+  const inp=document.getElementById('lIn'), out=document.getElementById('lOut'), rl=document.getElementById('lRules'), bt=document.getElementById('lBatch');
+  const SAMPLES=['변수','조사 방법','측정된 효과','어떻게 조사했나','무엇을 쟀나','이렇게 읽기','따져 보면','해마다 재는 숫자','결과는 생각보다 훨씬 좋았음'];
+  function draw(){
+    const r=HB.labelCheck(inp.value);
+    out.className='big-verdict '+(r.ok?'pass':'fail'); out.textContent=r.ok?'PASS · 명사형 소제목':'FAIL · 빌드 중단';
+    const ids=new Set(r.hits.map(h=>h.id));
+    rl.innerHTML=HB.LABEL_RULES.map(x=>`<div class="${ids.has(x.id)?'hit':''}"><span style="font-family:var(--mono);width:16px">${ids.has(x.id)?'✕':'·'}</span><span style="flex:1">${x.why}</span><code>${x.re.source.replace(/</g,'&lt;')}</code></div>`).join('');
+  }
+  bt.innerHTML=SAMPLES.map(s=>{const r=HB.labelCheck(s);return `<div data-s="${s}" style="cursor:pointer"><span>${s}</span><span class="${r.ok?'ok':'ng'}">${r.ok?'PASS':'FAIL'}</span></div>`}).join('');
+  bt.querySelectorAll('[data-s]').forEach(d=>d.onclick=()=>{inp.value=d.dataset.s;draw()});
+  inp.addEventListener('input',draw); draw();
+})();
+</script>
+</body>
+</html>

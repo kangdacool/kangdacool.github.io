@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>문맥의 한계 · HarnessBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#0b0f17">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .hay{height:270px;overflow:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:12px 14px;font-size:14.5px;line-height:1.8}
+  .hay p{margin:0}
+  .hay.blur{filter:blur(5px);user-select:none}
+  .qbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .qbar .q{font-weight:800}
+  .timer{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent)}
+  .ans{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .ans button{height:44px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text);font:inherit;font-family:var(--mono);font-size:16px;cursor:pointer}
+  .ans button:hover:not(:disabled){border-color:var(--accent)}
+  .ans button.right{border-color:var(--ok);background:var(--ok-soft)} .ans button.wrong{border-color:var(--bad);background:var(--bad-soft)}
+  @media (max-width:520px){.ans{grid-template-columns:1fr 1fr}}
+  .budget-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:14.5px}
+  .budget-row:last-child{border-bottom:0}
+  .budget-row .tk{font-family:var(--mono);font-size:12.5px;color:var(--text-faint)}
+  .bar{height:30px;border-radius:8px;overflow:hidden;display:flex;background:var(--surface)}
+  .bar > span{height:100%;transition:width .3s}
+  .waffle{display:grid;grid-template-columns:repeat(40,1fr);gap:2px}
+  .waffle i{aspect-ratio:1;border-radius:2px;background:var(--surface-2);transition:background .3s}
+  .waffle i.on{background:var(--ok)}
+  .dotfield{display:flex;flex-wrap:wrap;gap:3px}
+  .dotfield i{width:9px;height:9px;border-radius:2px;background:var(--bad);opacity:.85;animation:fi .2s ease both}
+  .linebox{display:grid;gap:8px}
+  .linebox .token{display:block;font-family:var(--mono);font-size:13px}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 02</div>
+  <h1>문맥의 한계</h1>
+  <p class="lead">에이전트가 실수를 하면 가장 먼저 떠오르는 처방은 규칙을 더 적어 넣는 것이다. 규칙 문서에 한 줄 추가하고, 배경 설명을 덧붙이고, 관련 파일을 통째로 붙인다. 이 장은 그 처방이 어디서 한계에 부딪히는지를 세 가지 근거로 본다. 입력이 길수록 성능이 떨어진다는 측정, 규칙 문서를 넣어도 성공률은 거의 그대로이고 비용만 늘었다는 실험, 그리고 적어 둔 규칙이 실제로 강제되는 경우가 드물다는 실태조사다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>context rot이 무엇이고, 비슷하지만 틀린 정보(방해 문장) 하나가 왜 문제인지 설명할 수 있다.</li>
+      <li>“가장 작은 고신호 토큰 집합, 필요할 때 불러오기” 원칙을 문맥 예산에 적용할 수 있다.</li>
+      <li>규칙 문서 실험(Gloaguen 외 2026)의 성공률·비용 결과와, 규칙 문서에 남길 내용과 뺄 내용을 구분할 수 있다.</li>
+      <li>글로 적은 보안 규칙과 실제로 강제되는 통제의 차이를 수치로 말할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>문맥 길이와 성능: context rot</h2>
+  <p>Chroma 연구팀(Hong 외 2025)은 GPT-4.1, Claude 4, Gemini 2.5, Qwen3를 포함한 <b>LLM 18개</b>로 같은 과제를 입력 길이만 바꿔 가며 풀게 했다. 결론은 짧다. 모든 실험에서 입력이 길어질수록 성능이 일관되게 떨어졌다. 이 현상을 <b>context rot</b>이라고 부른다.</p>
+  <blockquote class="src">“Across all experiments, model performance consistently degrades with increasing input length.”<cite>Hong, Troynikov, Huber. Context rot. Chroma Research, 2025</cite></blockquote>
+  <p>더 눈여겨볼 결과는 방해 문장(distractor)이다. 정답 문장과 주제는 같지만 내용은 틀린 문장을 <b>하나만</b> 섞어도 정답 문장만 있을 때보다 성능이 떨어졌다. 규칙 문서에 비유하면, 예전 규칙과 새 규칙이 함께 적혀 있거나 비슷한 이름의 설정이 여럿 섞인 상태다.</p>
+
+  <p>모델에게 일어나는 일을 직접 볼 수는 없지만, 같은 구조의 과제를 사람이 풀어 볼 수는 있다. 아래 실험은 연구실 운영 메모 더미에서 질문의 답을 찾는 과제다. 메모 길이와 방해 문장 개수를 바꿔 가며 몇 번 풀어 보자. 기록은 오른쪽 그래프에 쌓인다.</p>
+
+  <div class="sim" id="sim-needle">
+    <div class="sim-head"><span class="pill exp">EXPERIMENT</span><span class="title">바늘 찾기 체험: 메모 길이와 방해 문장</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="qbar"><div class="q" id="nQ">시작을 누르면 질문이 나옵니다</div><div class="timer" id="nT">0.0s</div></div>
+        <div class="hay blur" id="nHay"><p class="dim">메모가 여기에 나타납니다.</p></div>
+        <div class="ans" id="nAns"></div>
+      </div>
+      <div class="sim-ctrl">
+        <div class="ctrl"><div class="lab">메모 길이</div>
+          <div class="seg" id="nLen"><button data-v="15" class="on">15줄</button><button data-v="60">60줄</button><button data-v="180">180줄</button></div></div>
+        <div class="ctrl"><div class="lab">방해 문장</div>
+          <div class="seg" id="nDis"><button data-v="0" class="on">0개</button><button data-v="1">1개</button><button data-v="4">4개</button></div></div>
+        <button class="btn primary" id="nGo" style="width:100%;justify-content:center">시작</button>
+        <svg id="nPlot" viewBox="0 0 260 180" style="width:100%;margin-top:16px"></svg>
+        <div class="faint" style="font-size:12px">가로: 메모 길이 · 세로: 걸린 시간(초) · 점 색: 방해 문장 수 · 속 빈 점: 오답</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">시도</div><div class="v" id="nN">0</div></div>
+      <div><div class="k">정답률</div><div class="v" id="nAcc">-</div></div>
+      <div><div class="k">평균 시간 15줄</div><div class="v" id="nM1">-</div></div>
+      <div><div class="k">평균 시간 180줄</div><div class="v" id="nM3">-</div></div>
+    </div>
+    <div class="sim-foot">해볼 것: 15줄·방해 0개로 두 번, 180줄·방해 4개로 두 번 풀어 비교해 보세요. 방해 문장은 질문과 대상이 비슷하지만 답이 다른 문장입니다.</div>
+  </div>
+
+  <h2 id="s2"><span class="num">02</span>원칙: 가장 작은 고신호 토큰 집합</h2>
+  <p>Anthropic(2025)은 컨텍스트 엔지니어링의 원칙을 이렇게 정리한다. 원하는 결과를 낼 가능성을 높이는 <b>가장 작은 고신호(high-signal) 토큰 집합</b>을 찾고, 모든 것을 미리 넣어 두기보다 <b>필요할 때 불러온다</b>. Claude Code의 스킬도 같은 방식이다. 평소에는 스킬의 이름과 짧은 설명만 문맥에 있고, 해당 작업을 할 때 본문을 읽어 들인다.</p>
+  <p>아래는 가상의 작업 “논문 표 3을 연구실 서식으로 맞추기”의 문맥을 짜는 연습이다. 각 항목의 토큰 수는 설명을 위한 예시 값이다. 항목을 켜고 끄며 전체 크기와 <b>신호 비율</b>(이 작업에 실제로 필요한 토큰의 비율)이 어떻게 변하는지 보자.</p>
+
+  <div class="sim" id="sim-budget">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">문맥 예산 짜기: 표 3 서식 맞추기</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="bar" id="bBar"></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin:8px 0 14px" class="dim">
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--ok);margin-right:5px"></i>이 작업에 필요</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warn);margin-right:5px"></i>일부만 필요</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--text-faint);margin-right:5px"></i>이 작업과 무관</span>
+        </div>
+        <div id="bRows"></div>
+      </div>
+      <div class="sim-ctrl">
+        <div class="dim" style="font-size:14px;margin-bottom:10px">빠른 설정</div>
+        <div style="display:grid;gap:8px">
+          <button class="btn sm" data-preset="all">전부 넣기</button>
+          <button class="btn sm" data-preset="lean">필요한 것만, 필요할 때</button>
+          <button class="btn sm" data-preset="none">최소 지시만</button>
+        </div>
+        <div class="callout" style="font-size:14px;margin-top:16px">신호 비율이 높을수록 모델이 주의를 나눠 써야 할 무관한 토큰이 적습니다. 다만 필요한 항목을 빼면 신호 비율은 높아도 작업에 필요한 정보가 사라집니다.</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">전체 토큰</div><div class="v" id="bTot">-</div></div>
+      <div><div class="k">신호 비율</div><div class="v" id="bSig">-</div></div>
+      <div><div class="k">빠진 필수 정보</div><div class="v" id="bMiss">-</div></div>
+    </div>
+  </div>
+
+  <h2 id="s3"><span class="num">03</span>규칙 문서의 효과</h2>
+  <p>그렇다면 저장소마다 두는 규칙 파일(AGENTS.md, CLAUDE.md)은 실제로 도움이 될까. Gloaguen 외(2026)는 코딩 에이전트에게 규칙 문서를 넣고 실제 저장소의 이슈를 풀게 했다. 두 조건을 비교했다. SWE-bench 과제에 LLM이 자동 생성한 문서를 넣은 경우, 그리고 개발자가 직접 커밋해 둔 규칙 문서가 있는 저장소의 이슈 모음(논문의 새 벤치마크)이다.</p>
+
+  <div class="sim" id="sim-agents">
+    <div class="sim-head"><span class="pill">FIGURE</span><span class="title">규칙 문서를 넣었을 때의 변화 (Gloaguen 외 2026)</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="seg" id="aView" style="margin-bottom:14px"><button data-v="succ" class="on">성공률 변화</button><button data-v="cost">추론 비용 변화</button></div>
+      <svg id="aSvg" viewBox="0 0 760 250" style="width:100%"></svg>
+      <div id="aNote" class="dim" style="font-size:14px;margin-top:6px"></div>
+    </div></div>
+  </div>
+
+  <p>요약하면 세 가지다. 성공률은 거의 그대로였고, 어느 조건도 규칙 문서가 없을 때와 통계적으로 차이가 나지 않았다. 비용은 평균 20% 넘게 늘었다. 그리고 내용에 따라 효과가 갈렸다. 모델은 문서의 지시를 잘 따랐지만, 모델 제공사들이 권장해 온 <b>프로젝트 소개 글</b>은 도움이 되지 않았다. 도움이 된 것은 그 프로젝트만의 <b>특이한 작업 방식</b>을 적어 둔 부분이었다.</p>
+  <div class="callout warn"><div class="t">근거의 범위</div>이 실험은 SWE-bench 계열의 코딩 과제 기준이다. 논문·덱·보고서 같은 연구 산출물에도 같은 결과가 나온다는 근거는 아직 없다. 저자들도 규칙 문서로 성능을 높이려는 시도는 배포 전에 엄밀하게 평가하라고 결론짓는다.</div>
+
+  <p>이 결과를 규칙 문서 작성에 옮기면 기준이 하나 생긴다. <b>모델이 이미 알거나 스스로 읽어 낼 수 있는 내용은 빼고, 모델이 모르는 그 프로젝트만의 방식만 남긴다.</b> 아래 가상의 연구실 CLAUDE.md 초안으로 연습해 보자.</p>
+
+  <div class="sim" id="sim-trim">
+    <div class="sim-head"><span class="pill game">GAME</span><span class="title">규칙 문서 다이어트: 남길 줄과 뺄 줄</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="pool">
+        <span class="token" data-cat="cut">이 저장소는 역학 코호트 분석 코드를 모아 둔 곳이다</span>
+        <span class="token" data-cat="keep">결측 처리에 coalesce()를 쓰지 않는다</span>
+        <span class="token" data-cat="cut">R은 통계 분석에 널리 쓰이는 언어다</span>
+        <span class="token" data-cat="keep">경로는 here::here()로만 지정하고 setwd()는 쓰지 않는다</span>
+        <span class="token" data-cat="cut">코드는 읽기 쉽고 깔끔하게 작성한다</span>
+        <span class="token" data-cat="keep">Word·PPT 생성 코드는 마지막에 Office 재저장 단계를 거친다</span>
+        <span class="token" data-cat="cut">폴더 구성: data/, R/, output/</span>
+        <span class="token" data-cat="keep">한글이 깨지므로 heredoc·python -c로 파일을 쓰지 않는다</span>
+      </div>
+      <div class="binrow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        <div class="bin" data-cat="keep"><div class="bt">남길 것: 모델이 모르는 고유 방식</div><div class="items"></div></div>
+        <div class="bin" data-cat="cut"><div class="bt">뺄 것: 소개·상식·스스로 읽을 수 있는 것</div><div class="items"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn sm primary" data-check>채점</button><button class="btn sm" data-reset>다시</button><span data-out class="dim" style="font-size:14px"></span>
+      </div>
+    </div></div>
+    <div class="sim-foot" id="trimFoot">채점하면 남긴 줄만으로 이루어진 규칙 문서의 길이가 표시됩니다.</div>
+  </div>
+
+  <h2 id="s4"><span class="num">04</span>적어 둔 규칙과 실제 강제</h2>
+  <p>규칙 문서에 “하지 마라”라고 쓰면, 그것은 모델이 해석하는 자연어 지시다. 반면 Claude Code의 deny 같은 내장 통제는 에이전트가 행동하기 전에 그 행동을 막는다. 두 방식은 같은 보안 목표를 표현할 수 있지만 작동 방식이 다르다. 공개된 CLAUDE.md 파일 481개에서 보안 규칙을 뽑아, 그 규칙과 맞물리는 내장 통제가 있는지 확인한 연구가 있다(arXiv:2608.23550).</p>
+
+  <div class="sim" id="sim-waffle">
+    <div class="sim-head"><span class="pill">FIGURE</span><span class="title">글로 적은 보안 규칙 중 내장 통제가 맞물린 비율</span></div>
+    <div class="sim-body">
+      <div class="sim-view"><div class="waffle" id="wGrid"></div><div class="faint" style="font-size:12.5px;margin-top:8px">칸 하나 = 규칙 1,000개 중 1개 · 초록 = 맞물린 내장 통제가 있음</div></div>
+      <div class="sim-ctrl">
+        <div class="ctrl"><div class="lab">일치 판정 기준</div>
+          <div class="seg" id="wStd"><button data-v="44" class="on">가장 엄격</button><button data-v="160">가장 느슨</button></div></div>
+        <div style="font-family:var(--mono);font-size:40px;font-weight:800;margin:6px 0" id="wBig">4.4%</div>
+        <div class="dim" style="font-size:14px" id="wTxt"></div>
+      </div>
+    </div>
+  </div>
+  <p>나머지 규칙은 모델의 해석에 맡겨져 있다는 뜻이다. 논문은 CLAUDE.md를 <b>쓰기만 하는 채널</b>이라고 부른다. 개발자가 보안 규칙을 적어도, 그 규칙이 강제될지에 대한 피드백을 받지 못한다.</p>
+
+  <h3>연구실 사례: 금지 규칙과 238번의 차단</h3>
+  <p>같은 일이 연구실 하네스에서도 관찰됐다. 규칙 문서에는 한글이 깨지는 명령 입력 방식(heredoc, python -c)을 쓰지 말라고 적혀 있었다. 그런데 약 4주(2026-09-11~10-05) 동안 에이전트는 이 방식을 계속 시도했고, 훅이 막은 횟수가 기록으로 남았다.</p>
+
+  <div class="sim" id="sim-238">
+    <div class="sim-head"><span class="pill">FIGURE</span><span class="title">훅이 막은 금지 명령 시도</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="font-family:var(--mono);font-size:46px;font-weight:800;color:var(--bad)" id="cNum">0</div>
+        <div class="dim">번 차단 · 2026-09-11 ~ 10-05 · 기록: agent/logs/guard_fires.jsonl</div>
+        <button class="btn sm" id="cGo" style="margin-left:auto">다시 재생</button>
+      </div>
+      <div class="dotfield" id="cDots"></div>
+    </div></div>
+    <div class="sim-foot">점 하나가 차단 한 번입니다. 규칙 문서만 있었다면 이 시도들은 그대로 실행됐을 것이고, 결과물의 한글이 깨진 뒤에야 발견됐을 것입니다.</div>
+  </div>
+
+  <p>여기까지의 근거를 모으면 결론은 하나로 모인다. 글로 된 지시를 더 길게 쓰는 것만으로는 결과가 보장되지 않는다. 그래서 출력이 나온 뒤에 확인하는 장치가 필요하다. 다음 장의 주제인 센서다.</p>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q1</span>Chroma의 context rot 연구에서 방해 문장에 관해 확인된 것은?</div>
+    <div class="opts">
+      <button class="opt">방해 문장이 4개 이상일 때부터 성능이 떨어졌다</button>
+      <button class="opt">방해 문장 하나만 있어도 정답 문장만 있을 때보다 성능이 떨어졌다</button>
+      <button class="opt">방해 문장은 긴 입력에서만 영향을 주었다</button>
+      <button class="opt">최신 모델은 방해 문장의 영향을 받지 않았다</button>
+    </div>
+    <div class="exp">“Even a single distractor reduces performance relative to the baseline.” 하나만 섞여도 저하가 나타났다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q2</span>Gloaguen 외(2026)의 결과로 옳은 것은?</div>
+    <div class="opts">
+      <button class="opt">성공률은 통계적으로 차이가 없었고, 추론 비용은 평균 20% 넘게 늘었다</button>
+      <button class="opt">사람이 쓴 규칙 문서는 성공률을 통계적으로 유의하게 높였다</button>
+      <button class="opt">프로젝트 소개 글이 가장 큰 도움이 되었다</button>
+      <button class="opt">모델은 규칙 문서의 지시를 대부분 무시했다</button>
+    </div>
+    <div class="exp">사람이 쓴 문서는 +2.4%(p=0.21)로 유의하지 않았고, 비용은 평균 20% 넘게 늘었다. 지시는 잘 따랐지만 프로젝트 소개 글은 도움이 되지 않았다.</div>
+  </div>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q3</span>규칙 문서에 남길 가치가 가장 큰 줄은?</div>
+    <div class="opts">
+      <button class="opt">“이 저장소는 코호트 분석 코드를 모아 둔 곳이다”</button>
+      <button class="opt">“코드는 깔끔하게 작성한다”</button>
+      <button class="opt">“결측 처리에 coalesce()를 쓰지 않는다”</button>
+      <button class="opt">“폴더 구성: data/, R/, output/”</button>
+    </div>
+    <div class="exp">모델이 스스로 알 수 없는 그 프로젝트만의 방식이다. 소개 글, 일반 상식, 폴더를 열어 보면 알 수 있는 구조는 길이만 늘린다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+/* segmented helper */
+function seg(id, cb){const el=document.getElementById(id);el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v)});return ()=>el.querySelector('.on').dataset.v}
+
+/* ---------- needle experiment ---------- */
+(function(){
+  const R = Math.random;
+  const pick = a=>a[Math.floor(R()*a.length)];
+  const ENT = [
+    ['분석 서버','분석 서버 2호기'],['공유 드라이브','공유 드라이브 백업본'],['코호트 DB','코호트 DB 사본'],
+    ['덱 템플릿 저장소','덱 템플릿 보관함'],['R 패키지 미러','R 패키지 캐시'],['논문 원고 폴더','논문 원고 임시 폴더']
+  ];
+  const PEOPLE=['민 선생','강 연구원','박 조교','이 전공의','최 교수','정 연구원','한 선생','윤 조교'];
+  const TASK=['결측 점검','변수 정의서 갱신','표 1 초안','민감도 분석','가중치 재계산','코드북 정리','그림 2 수정','참고문헌 대조','IRB 서류 확인','자료 반입'];
+  const FILE=['cohort_2024.csv','table3.R','fig2.py','codebook.xlsx','weights.rds','deck_build.py','manuscript.docx','refs.bib'];
+  const time=()=>`${String(1+Math.floor(R()*23)).padStart(2,'0')}:${pick(['00','10','20','30','40','50'])}`;
+  function filler(){
+    const t=[
+      ()=>`${pick(PEOPLE)}이 ${1+Math.floor(R()*28)}일에 ${pick(TASK)}를 마쳤다.`,
+      ()=>`${pick(FILE)}의 행 수는 ${(1000+Math.floor(R()*90000)).toLocaleString()}이다.`,
+      ()=>`${pick(TASK)} 담당은 ${pick(PEOPLE)}으로 바뀌었다.`,
+      ()=>`${pick(FILE)}은 매주 ${pick(['월','화','수','목','금'])}요일에 갱신한다.`,
+      ()=>`다음 랩미팅 안건은 ${pick(TASK)}이다.`,
+      ()=>`${pick(PEOPLE)}은 ${pick(FILE)}의 열 이름을 정리했다.`,
+      ()=>`${pick(TASK)} 결과는 공유 폴더 ${pick(['A','B','C','D'])}구역에 둔다.`
+    ];
+    return pick(t)();
+  }
+  const hay=document.getElementById('nHay'), Q=document.getElementById('nQ'), T=document.getElementById('nT'), A=document.getElementById('nAns'), go=document.getElementById('nGo');
+  const getLen=seg('nLen',()=>{}), getDis=seg('nDis',()=>{});
+  let t0=0, raf=0, cur=null; const log=[];
+  function start(){
+    const L=+getLen(), D=+getDis();
+    const [ent,sim]=pick(ENT); const ans=time();
+    const used=new Set([ans]); const dtimes=[];
+    const lines=[]; for(let i=0;i<L-1-D;i++) lines.push(filler());
+    const needle=`${ent}의 정기 점검 시각은 ${ans}이다.`;
+    const disForms=[t=>`${sim}의 정기 점검 시각은 ${t}이다.`, t=>`${ent}의 예전 점검 시각은 ${t}였다.`, t=>`${sim}의 예전 점검 시각은 ${t}였다.`, t=>`${ent}의 정기 백업 시각은 ${t}이다.`];
+    for(let i=0;i<D;i++){let t;do{t=time()}while(used.has(t));used.add(t);dtimes.push(t);lines.splice(Math.floor(R()*lines.length),0,disForms[i%4](t))}
+    lines.splice(Math.floor(R()*(lines.length+1)),0,needle);
+    hay.innerHTML=lines.map(s=>`<p>${s}</p>`).join(''); hay.scrollTop=0; hay.classList.remove('blur');
+    Q.textContent=`질문: ${ent}의 정기 점검 시각은?`;
+    let opts=[ans,...dtimes]; while(opts.length<4){const t=time();if(!opts.includes(t))opts.push(t)} opts=opts.slice(0,4).sort(()=>R()-.5);
+    A.innerHTML=''; opts.forEach(o=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>finish(o,b);A.appendChild(b)});
+    cur={L,D,ans}; t0=performance.now(); go.disabled=true;
+    cancelAnimationFrame(raf); const tick=()=>{T.textContent=((performance.now()-t0)/1000).toFixed(1)+'s';raf=requestAnimationFrame(tick)}; tick();
+  }
+  function finish(o,b){
+    if(!cur) return; cancelAnimationFrame(raf);
+    const sec=(performance.now()-t0)/1000, ok=o===cur.ans;
+    [...A.children].forEach(x=>{x.disabled=true;if(x.textContent===cur.ans)x.classList.add('right')}); if(!ok)b.classList.add('wrong');
+    log.push({L:cur.L,D:cur.D,sec,ok}); cur=null; go.disabled=false; go.textContent='다음 문제';
+    hay.querySelectorAll('p').forEach(p=>{if(p.textContent.includes(Q.textContent.replace('질문: ','').replace('의 정기 점검 시각은?','')+'의 정기 점검 시각은')) p.style.cssText='background:var(--ok-soft);border-radius:4px'});
+    draw();
+  }
+  function draw(){
+    const svg=document.getElementById('nPlot'); svg.innerHTML=''; const {S}=HB;
+    const X={15:55,60:140,180:225}, maxS=Math.max(20,...log.map(l=>l.sec));
+    const y=s=>150-130*s/maxS;
+    for(let i=0;i<=4;i++){const v=maxS*i/4;S('line',{x1:30,x2:255,y1:y(v),y2:y(v),class:'gridline'},svg);S('text',{x:26,y:y(v)+4,'text-anchor':'end','font-size':9,class:'svgmono'},svg).textContent=Math.round(v)}
+    Object.entries(X).forEach(([k,x])=>S('text',{x,y:168,'text-anchor':'middle','font-size':10,class:'svgmono'},svg).textContent=k+'줄');
+    const col={0:'var(--blue)',1:'var(--warn)',4:'var(--accent-2)'};
+    log.forEach((l,i)=>{const jitter=((i*37)%21)-10;S('circle',{cx:X[l.L]+jitter,cy:y(l.sec),r:5,fill:l.ok?col[l.D]:'none',stroke:col[l.D],'stroke-width':2},svg)});
+    document.getElementById('nN').textContent=log.length;
+    document.getElementById('nAcc').textContent=log.length?Math.round(100*log.filter(l=>l.ok).length/log.length)+'%':'-';
+    const m=L=>{const a=log.filter(l=>l.L===L);return a.length?(a.reduce((s,l)=>s+l.sec,0)/a.length).toFixed(1)+'s':'-'};
+    document.getElementById('nM1').textContent=m(15); document.getElementById('nM3').textContent=m(180);
+  }
+  go.onclick=start; draw();
+})();
+
+/* ---------- context budget ---------- */
+(function(){
+  const ITEMS=[
+    {k:'기본 지시(과제 설명)', t:300, sig:1, need:true, fixed:true},
+    {k:'규칙 문서: 전체판', t:6000, sig:.15, grp:'rule'},
+    {k:'규칙 문서: 고유 규칙만', t:800, sig:.8, grp:'rule', need:true},
+    {k:'프로젝트 소개 글', t:2500, sig:0},
+    {k:'표 서식 스킬 (필요할 때 불러옴)', t:1200, sig:1, need:true},
+    {k:'발표덱 스킬', t:1500, sig:0},
+    {k:'원자료 파일 전체', t:20000, sig:.05, grp:'data'},
+    {k:'표 3에 쓰는 열만', t:1500, sig:1, grp:'data', need:true},
+    {k:'이전 대화 전체', t:12000, sig:.1, grp:'hist'},
+    {k:'이전 대화 요약', t:800, sig:.6, grp:'hist'}
+  ];
+  const st=ITEMS.map(i=>!!i.fixed);
+  const rows=document.getElementById('bRows'), bar=document.getElementById('bBar');
+  ITEMS.forEach((it,i)=>{
+    const r=document.createElement('label'); r.className='budget-row';
+    r.innerHTML=`<span class="toggle" style="margin:0"><input type="checkbox" ${st[i]?'checked':''} ${it.fixed?'disabled':''}> ${it.k}</span><span class="tk">${it.t.toLocaleString()} tok</span>`;
+    r.querySelector('input').onchange=e=>{st[i]=e.target.checked; if(st[i]&&it.grp){ITEMS.forEach((o,j)=>{if(j!==i&&o.grp===it.grp){st[j]=false;rows.children[j].querySelector('input').checked=false}})} draw()};
+    rows.appendChild(r);
+  });
+  const colr=s=>s>=.6?'var(--ok)':s>0?'var(--warn)':'var(--text-faint)';
+  function draw(){
+    let tot=0,sig=0; bar.innerHTML='';
+    ITEMS.forEach((it,i)=>{if(st[i]){tot+=it.t;sig+=it.t*it.sig}});
+    ITEMS.forEach((it,i)=>{if(st[i]){const s=document.createElement('span');s.style.width=(100*it.t/tot)+'%';s.style.background=colr(it.sig);s.style.borderRight='1px solid var(--bg-elev)';s.title=it.k;bar.appendChild(s)}});
+    const miss=[];
+    if(!st[2]&&!st[1]) miss.push('연구실 규칙');
+    if(!st[4]) miss.push('표 서식');
+    if(!st[7]&&!st[6]) miss.push('표 3 자료');
+    document.getElementById('bTot').textContent=tot.toLocaleString();
+    document.getElementById('bSig').textContent=Math.round(100*sig/tot)+'%';
+    const mEl=document.getElementById('bMiss'); mEl.textContent=miss.length?miss.join(', '):'없음'; mEl.style.color=miss.length?'var(--bad)':'var(--ok)'; mEl.style.fontSize=miss.length>1?'15px':'21px';
+  }
+  const preset={all:[1,1,0,1,1,1,1,0,1,0],lean:[1,0,1,0,1,0,0,1,0,0],none:[1,0,0,0,0,0,0,0,0,0]};
+  document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{preset[b.dataset.preset].forEach((v,i)=>{st[i]=!!v;rows.children[i].querySelector('input').checked=!!v});draw()});
+  preset.all.forEach((v,i)=>{st[i]=!!v;rows.children[i].querySelector('input').checked=!!v});
+  draw();
+})();
+
+/* ---------- AGENTS.md figure ---------- */
+(function(){
+  const svg=document.getElementById('aSvg'), note=document.getElementById('aNote'); const {S}=HB;
+  const DATA={
+    succ:{unit:'%',rng:[-4,4],rows:[
+      {k:'자동 생성 문서 · SWE-bench',v:-0.5,c:'var(--text-faint)'},
+      {k:'자동 생성 문서 · 개발자 문서 저장소 과제',v:-2,c:'var(--text-faint)'},
+      {k:'개발자가 쓴 문서 · 개발자 문서 저장소 과제',v:2.4,c:'var(--accent)'}],
+      note:'자동 생성 문서: p = 0.87, 0.37 · 개발자가 쓴 문서: p = 0.21 (Cochran-Mantel-Haenszel 검정, 양측). 세 조건 모두 규칙 문서가 없을 때와 유의한 차이 없음.'},
+    cost:{unit:'%',rng:[0,25],rows:[
+      {k:'자동 생성 문서 · SWE-bench',v:20,c:'var(--accent-2)'},
+      {k:'자동 생성 문서 · 개발자 문서 저장소 과제',v:23,c:'var(--accent-2)'},
+      {k:'개발자가 쓴 문서 · 개발자 문서 저장소 과제',v:19,c:'var(--accent-2)',pre:'최대 '}],
+      note:'추론 비용은 평균 20% 넘게 증가. 개발자가 쓴 문서는 최대 19% 증가.'}
+  };
+  function draw(v){
+    svg.innerHTML=''; const d=DATA[v];
+    const x0=330,x1=730,sx=val=>x0+(x1-x0)*(val-d.rng[0])/(d.rng[1]-d.rng[0]);
+    const ticks=v==='succ'?[-4,-2,0,2,4]:[0,5,10,15,20,25];
+    ticks.forEach(t=>{S('line',{x1:sx(t),x2:sx(t),y1:20,y2:200,class:t===0?'axisline':'gridline'},svg);S('text',{x:sx(t),y:222,'text-anchor':'middle','font-size':12,class:'svgmono'},svg).textContent=(t>0&&v==='succ'?'+':'')+t+d.unit});
+    d.rows.forEach((r,i)=>{
+      const y=40+i*60;
+      S('text',{x:x0-14,y:y+18,'text-anchor':'end','font-size':14,class:'svgtext'},svg).textContent=r.k;
+      const a=sx(Math.min(0,r.v)),b=sx(Math.max(0,r.v));
+      const rect=S('rect',{x:sx(0),y,width:0,height:28,rx:5,fill:r.c},svg);
+      requestAnimationFrame(()=>{rect.style.transition='all .5s';rect.setAttribute('x',a);rect.setAttribute('width',Math.max(2,b-a))});
+      S('text',{x:r.v>=0?b+8:a-8,y:y+19,'text-anchor':r.v>=0?'start':'end','font-size':14,'font-weight':700,fill:r.c,'font-family':'var(--mono)'},svg).textContent=(r.pre||'')+(r.v>0?'+':'')+r.v+d.unit;
+    });
+    S('text',{x:x1,y:244,'text-anchor':'end','font-size':11,class:'svgdim'},svg).textContent='규칙 문서가 없을 때 대비';
+    note.textContent=d.note;
+  }
+  seg('aView',draw); draw('succ');
+})();
+
+/* ---------- trim game ---------- */
+HB.sorter(document.getElementById('sim-trim'),(ok,tot)=>{
+  const keep=[...document.querySelectorAll('#sim-trim .bin[data-cat=keep] .token')];
+  const all=[...document.querySelectorAll('#sim-trim .token')].reduce((s,t)=>s+t.textContent.length,0);
+  const k=keep.reduce((s,t)=>s+t.textContent.length,0);
+  document.getElementById('trimFoot').innerHTML=`남긴 줄 ${keep.length}개 · 글자 수 ${k} / ${all} (${Math.round(100*k/all)}%)${ok===tot?' · 남은 줄은 모두 모델이 스스로 알 수 없는 고유 방식입니다':''}`;
+});
+
+/* ---------- waffle ---------- */
+(function(){
+  const g=document.getElementById('wGrid'); const cells=[];
+  for(let i=0;i<1000;i++){const c=document.createElement('i');g.appendChild(c);cells.push(c)}
+  const order=cells.map((c,i)=>i).sort((a,b)=>((a*7919)%1000)-((b*7919)%1000));
+  function draw(v){
+    const n=+v; order.forEach((idx,k)=>cells[idx].classList.toggle('on',k<n));
+    document.getElementById('wBig').textContent=n===44?'4.4%':'약 16%';
+    document.getElementById('wTxt').innerHTML=n===44?'95% 신뢰구간 2.6–6.7%. 내장 통제가 글로 적은 규칙과 정확히 일치해야 맞물렸다고 본 기준.':'일치 기준을 가장 느슨하게 잡아도 약 16%. 공개 CLAUDE.md 481개, 보안 규칙 870개 분석.';
+  }
+  seg('wStd',draw); draw(44);
+})();
+
+/* ---------- 238 counter ---------- */
+(function(){
+  const num=document.getElementById('cNum'), dots=document.getElementById('cDots'); let timer=0;
+  function play(){
+    clearInterval(timer); dots.innerHTML=''; let n=0;
+    timer=setInterval(()=>{n+=2; if(n>238)n=238; num.textContent=n; while(dots.children.length<n){dots.appendChild(document.createElement('i'))} if(n>=238)clearInterval(timer)},16);
+  }
+  document.getElementById('cGo').onclick=play;
+  const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){play();io.disconnect()}},{threshold:.4});
+  io.observe(document.getElementById('sim-238'));
+})();
+</script>
+</body>
+</html>

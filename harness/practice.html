@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>하네스를 다듬는 순서 · HarnessBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#0b0f17">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .up{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:u}
+  .up li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--bg-elev)}
+  .up li:before{counter-increment:u;content:counter(u);width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;background:var(--accent-soft);color:var(--accent)}
+  .up li b{display:block}
+  .up li span{font-size:14.5px;color:var(--text-dim)}
+  .chg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .chg label{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;font-size:13.5px;line-height:1.4}
+  .chg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+  .chg input{accent-color:var(--accent)}
+  .chg .eff{font-family:var(--mono);font-size:12px;color:var(--text-faint)}
+  @media (max-width:640px){.chg{grid-template-columns:1fr 1fr}}
+  .lines{font-family:var(--mono);font-size:13px;display:grid;gap:4px}
+  .lines div{display:grid;grid-template-columns:54px 1fr 54px;gap:8px;align-items:center;padding:6px 10px;border-radius:7px;background:var(--surface);border:1px solid transparent}
+  .lines .tag2{font-size:11px;text-align:center;border-radius:5px;padding:1px 0}
+  .lines .exp-c{background:var(--accent-2-soft);color:var(--accent-2)} .lines .exp-p{background:var(--surface-2);color:var(--text-dim)}
+  .lines .res{font-size:11px;text-align:center;font-weight:700}
+  .lines div.tp{border-color:var(--ok)} .lines div.tn{} .lines div.fp{border-color:var(--bad);background:var(--bad-soft)} .lines div.fn{border-color:var(--warn);background:var(--warn-soft)}
+  .cm{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;font-size:13px;margin-top:12px}
+  .cm div{padding:8px;border-radius:6px;text-align:center;background:var(--surface)}
+  .cm .h{background:transparent;color:var(--text-faint);font-size:12px}
+  .cm .n{font-family:var(--mono);font-size:20px;font-weight:800}
+  .fire{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  .fire i{width:22px;height:22px;border-radius:6px;transition:all .3s}
+  .fire i.real{background:var(--ok)} .fire i.tmp{background:var(--warn);opacity:.75} .fire i.unk{background:var(--text-faint)} .fire i.gone{opacity:.08}
+  .startcards .card .n{font-family:var(--mono);font-size:30px;font-weight:800;color:var(--accent)}
+  .startcards .card h3{margin:.2em 0 .3em}
+  .startcards .card p{margin:0;color:var(--text-dim);font-size:15px}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 04</div>
+  <h1>하네스를 다듬는 순서</h1>
+  <p class="lead">가이드와 센서를 나누는 틀이 생기면, 다음 질문은 무엇을 어떤 순서로 바꾸느냐다. 이 장은 한 연구실이 실제로 정한 업그레이드 순서와, 같은 절차를 거친 검사 두 개가 실사용에서 서로 다른 결론에 이른 사례를 따라간다. 그리고 처음 하네스를 다듬기 시작할 때 할 수 있는 세 가지를 정리한다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>하네스를 바꿀 때 한 번에 하나씩 바꾸고 효과를 확인해야 하는 이유를 설명할 수 있다.</li>
+      <li>반복 실수 발견 → 막는 방법 결정 → 만들고 시험 → 실제로 써 보기 → 수정·유지·삭제의 다섯 단계를 적용할 수 있다.</li>
+      <li>검사를 잡을 예·넘길 예로 시험하고, 실사용 알림 기록으로 유지·수정·삭제를 판단할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>업그레이드 순서</h2>
+  <p>연구실이 다음에 할 일로 정한 순서는 아래와 같다. 차단하는 장치보다 알리는 장치를 먼저 두고, 규칙과 검사의 대응을 점검한 뒤, 훅이 실제로 얼마나 울리는지 집계하고, 기본 규칙 문서를 줄이는 일은 맨 마지막에 둔다.</p>
+  <ol class="up">
+    <li><div><b>생성 시점 알림 훅</b><span>차단 없이 알림만 띄운다. 10/05 도입.</span></div></li>
+    <li><div><b>규칙과 검사의 대응표</b><span>규칙 문서의 각 규칙에 그것을 받치는 검사가 있는지 점검한다.</span></div></li>
+    <li><div><b>훅 발동 월간 집계</b><span>한 번도 안 울린 훅, 너무 자주 울리는 훅을 점검한다. 안 울린 훅은 시도가 없어서인지 가이드가 잘 작동해서인지 가른 뒤 판단한다.</span></div></li>
+    <li><div><b>기본 규칙 문서 축소</b><span>마지막에 한다. 줄이기 전후로 연구자 지적 빈도(피드백 장부의 건수)를 비교한다.</span></div></li>
+  </ol>
+  <div class="callout"><div class="t">한 번에 하나씩</div>여러 개를 동시에 바꾸면 예상치 못한 일이 생기고, 무엇 때문에 좋아졌는지 또는 나빠졌는지 알 수 없다. 바꾼 규칙이 효과가 있는지 확인하는 것까지가 한 단계다.</div>
+
+  <p>역학을 하는 사람에게는 익숙한 문제다. 노출 네 개가 동시에 바뀌면 결과의 변화를 어느 노출에 귀속시킬 수 없다. 아래 실험에서 직접 겪어 보자. 하네스 변경 후보 네 개에는 각각 숨겨진 효과가 있다. 셋은 지적 건수를 줄이고, 하나는 오히려 늘린다. 매주 어떤 변경을 적용할지 고르고 한 주를 돌려 보자. 목표는 해로운 변경 하나를 찾아내는 것이다.</p>
+
+  <div class="sim" id="sim-onebyone">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">한 번에 하나씩 대 한꺼번에: 해로운 변경 찾기</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="chg" id="oChg"></div>
+        <svg id="oPlot" viewBox="0 0 560 210" style="width:100%;margin-top:14px"></svg>
+      </div>
+      <div class="sim-ctrl">
+        <button class="btn primary" id="oRun" style="width:100%;justify-content:center">1주 운영하기</button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn sm" id="oReveal" style="flex:1;justify-content:center">정답 보기</button>
+          <button class="btn sm" id="oReset" style="flex:1;justify-content:center">새 판</button>
+        </div>
+        <div class="ctrl" style="margin-top:16px"><div class="lab">주간 잡음(우연 변동)</div><div class="seg" id="oNoise"><button data-v="1">작게</button><button data-v="2.5" class="on">보통</button><button data-v="4">크게</button></div></div>
+        <div id="oMsg" class="dim" style="font-size:14px;line-height:1.6"></div>
+      </div>
+    </div>
+    <div class="sim-foot">해볼 것: 첫 판은 네 개를 한꺼번에 켜고 몇 주 돌려 보세요. 둘째 판은 하나씩 켜 보세요. 효과 값과 잡음은 무작위로 정해지는 가상의 값입니다.</div>
+  </div>
+
+  <h2 id="s2"><span class="num">02</span>하네스를 다듬는 다섯 단계</h2>
+  <figure class="fig">
+    <svg viewBox="0 0 860 120" style="width:100%" role="img" aria-label="하네스를 다듬는 다섯 단계">
+      <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--text-faint)"/></marker></defs>
+      <g font-size="14.5" font-weight="700">
+        <rect x="6" y="30" width="148" height="60" rx="12" fill="var(--surface)" stroke="var(--border)"/><text x="80" y="66" text-anchor="middle" class="svgtext">반복 실수 발견</text>
+        <rect x="180" y="30" width="148" height="60" rx="12" fill="var(--surface)" stroke="var(--border)"/><text x="254" y="66" text-anchor="middle" class="svgtext">막는 방법 결정</text>
+        <rect x="354" y="30" width="148" height="60" rx="12" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="428" y="66" text-anchor="middle" fill="var(--accent)">만들고 시험</text>
+        <rect x="528" y="30" width="148" height="60" rx="12" fill="var(--accent-2-soft)" stroke="var(--accent-2)"/><text x="602" y="66" text-anchor="middle" fill="var(--accent-2)">실제로 써 보기</text>
+        <rect x="702" y="30" width="152" height="60" rx="12" fill="var(--ok-soft)" stroke="var(--ok)"/><text x="778" y="66" text-anchor="middle" fill="var(--ok)">수정 / 유지 / 삭제</text>
+      </g>
+      <g stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#a4)"><path d="M154 60H177"/><path d="M328 60H351"/><path d="M502 60H525"/><path d="M676 60H699"/></g>
+      <text x="428" y="112" text-anchor="middle" class="svgmono" font-size="12">잡을 예 · 넘길 예</text>
+      <text x="602" y="112" text-anchor="middle" class="svgmono" font-size="12">알림 기록</text>
+    </svg>
+    <figcaption><b>그림 4-1.</b> 하네스를 다듬는 다섯 단계. 같은 순서를 거친 검사도 실제로 써 보면 결과가 갈린다. 실제로 나아지는지 보고 나서 유지·수정·삭제를 정한다.</figcaption>
+  </figure>
+
+  <div class="tblwrap">
+    <table class="tbl">
+      <thead><tr><th style="width:18%">단계</th><th>예 1. 금지된 R 함수 검사</th><th>예 2. 문서 재저장 알림</th></tr></thead>
+      <tbody>
+        <tr><td><b>반복 실수</b></td><td>규칙에 금지라고 적어도 계속 사용됨</td><td>Word·PPT 만드는 코드가 Office 재저장 단계를 빠뜨림</td></tr>
+        <tr><td><b>막는 방법</b></td><td>자동 검사로 막기로 함</td><td>자동 알림을 띄우기로 함</td></tr>
+        <tr><td><b>만들고 시험</b></td><td>잡을 예 4개, 넘길 예 8개</td><td>잡을 예 4개, 넘길 예 9개</td></tr>
+        <tr><td><b>실제로 써 보기</b></td><td>알림 2번, 확인된 실수 1건</td><td>알림 14번, 실제 문서 생성 코드에서 3번</td></tr>
+        <tr><td><b>결정</b></td><td><span class="tag" style="background:var(--ok-soft);color:var(--ok)">유지</span></td><td><span class="tag" style="background:var(--warn-soft);color:var(--warn)">수정 예정</span> 알림 범위 좁히기</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>만들고 시험: 잡을 예와 넘길 예</h3>
+  <p>예 1의 검사는 R 코드에 금지 함수 <code>coalesce()</code>나 절대경로 <code>setwd()</code>를 새로 쓰면 알림을 띄운다. 검사를 만들 때는 반드시 양쪽 사례로 시험한다. <b>잡을 예</b>를 놓치면 검사가 쓸모없고, <b>넘길 예</b>를 잡으면 알림이 소음이 된다. 아래 시험대에서 정규식을 직접 고쳐 보자. 시험 세트는 이 교재에서 만든 예시다.</p>
+
+  <div class="sim" id="sim-bench">
+    <div class="sim-head"><span class="pill exp">TEST BENCH</span><span class="title">훅 시험대: 정규식을 고쳐 잡을 예 4개, 넘길 예 8개 맞히기</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <input type="text" class="code" id="bRe" spellcheck="false" aria-label="검사 정규식">
+        <div id="bErr" style="color:var(--bad);font-size:13px;min-height:18px;margin:4px 0"></div>
+        <div class="lines" id="bLines"></div>
+      </div>
+      <div class="sim-ctrl">
+        <div class="dim" style="font-size:14px;margin-bottom:8px">정규식 버전</div>
+        <div style="display:grid;gap:8px">
+          <button class="btn sm" data-re="v1">처음 버전: 이름만 찾기</button>
+          <button class="btn sm" data-re="v2">둘째 버전: 괄호까지</button>
+          <button class="btn sm" data-re="v3">셋째 버전: 주석·상대경로 제외</button>
+        </div>
+        <div class="cm" id="bCM"></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">잡을 예 중 잡음</div><div class="v" id="bRec">-</div></div>
+      <div><div class="k">넘길 예 중 넘김</div><div class="v" id="bSpec">-</div></div>
+      <div><div class="k">판정</div><div class="v" id="bVer" style="font-size:17px">-</div></div>
+    </div>
+  </div>
+
+  <h2 id="s3"><span class="num">03</span>실제로 써 보기: 알림 기록</h2>
+  <p>시험을 통과했다고 끝이 아니다. 실제 작업에서 알림이 얼마나, 어디서 울렸는지가 다음 결정을 정한다. 두 검사의 실사용 기록(agent/logs/guard_fires.jsonl)을 점으로 그리면 차이가 분명하다.</p>
+
+  <div class="sim" id="sim-fires">
+    <div class="sim-head"><span class="pill">FIGURE</span><span class="title">알림 한 번 = 점 하나</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div style="display:grid;grid-template-columns:1fr;gap:18px">
+        <div>
+          <b>예 1. 금지된 R 함수 검사</b> <span class="tag" style="background:var(--ok-soft);color:var(--ok);margin-left:6px">유지</span>
+          <div class="fire" id="f1"></div>
+          <div class="dim" style="font-size:14px">알림 2번. 1번은 실제 금지 패턴(절대경로)으로 확인, 다른 1번은 파일이 바뀌어 확인하지 못함.</div>
+        </div>
+        <div>
+          <b>예 2. 문서 재저장 알림</b> <span class="tag" style="background:var(--warn-soft);color:var(--warn);margin-left:6px">수정 예정</span>
+          <div class="fire" id="f2"></div>
+          <div class="dim" style="font-size:14px" id="f2txt"></div>
+          <label class="toggle"><input type="checkbox" id="fNarrow"> 같은 기록에 “실제 문서 생성 코드만” 범위를 적용하면</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin-top:6px" class="dim">
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--ok);margin-right:5px"></i>실제 대상에서 울림</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warn);margin-right:5px"></i>임시 스크립트에서 울림</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--text-faint);margin-right:5px"></i>확인 못 함</span>
+      </div>
+    </div></div>
+    <div class="sim-foot">예 2의 기록은 10/05–06의 14번이다. 실제 문서 생성 코드(grade_all.py)가 3번, 나머지 11번은 임시 스크립트였다. 알림 범위는 2026-10-12에 결정한다.</div>
+  </div>
+  <p>두 검사는 같은 다섯 단계를 거쳤지만 결론이 갈렸다. 예 1은 알림이 드물고 그중 확인된 실수가 있어 유지한다. 예 2는 알림이 잦았고, 그 대부분이 원래 노리던 대상 밖에서 울렸다. 실제 대상에서는 제대로 울렸으므로 삭제가 아니라 범위를 좁히는 수정을 택했다.</p>
+
+  <h2 id="s4"><span class="num">04</span>처음 시작할 때</h2>
+  <div class="grid3 startcards">
+    <div class="card"><div class="n">1</div><h3>규칙 파일은 짧게</h3><p>모델이 모르는 것만 적는다. 예: 연구실 고유 규칙. 2장의 Gloaguen 외(2026) 결론과 같은 방향이다.</p></div>
+    <div class="card"><div class="n">2</div><h3>반복 지적은 기록</h3><p>같은 지적을 두 번 받으면 어디서 틀렸는지 적어 둔다. 기록이 쌓이면 어느 실수를 검사로 옮길지가 보인다.</p></div>
+    <div class="card"><div class="n">3</div><h3>검사는 하나부터</h3><p>자주 나고 분명한 실수 하나를 골라, 잡을 예와 넘길 예 양쪽으로 시험한다.</p></div>
+  </div>
+
+  <div class="sim" id="sim-check" style="margin-top:28px">
+    <div class="sim-head"><span class="pill">CHECK</span><span class="title">내 하네스 점검: 다음 단계 찾기</span></div>
+    <div class="sim-body">
+      <div class="sim-view" id="cList"></div>
+      <div class="sim-ctrl"><div class="eyebrow">다음 한 걸음</div><div id="cOut" style="margin-top:8px;font-size:15px;line-height:1.65"></div></div>
+    </div>
+  </div>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q1</span>연구실 업그레이드 순서에서 기본 규칙 문서 축소를 맨 마지막에 두는 이유로 가장 알맞은 것은?</div>
+    <div class="opts">
+      <button class="opt">규칙 문서는 줄일 필요가 없어서</button>
+      <button class="opt">검사가 받치는 규칙을 먼저 파악하고, 줄이기 전후의 지적 빈도를 비교해야 해서</button>
+      <button class="opt">훅을 만드는 것보다 쉬워서</button>
+      <button class="opt">모델이 규칙 문서를 읽지 않아서</button>
+    </div>
+    <div class="exp">대응표와 월간 집계로 어떤 규칙이 검사로 받쳐지는지 안 뒤에 줄이고, 전후 지적 빈도로 효과를 확인한다.</div>
+  </div>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q2</span>문서 재저장 알림(예 2)을 “수정 예정”으로 정한 근거는?</div>
+    <div class="opts">
+      <button class="opt">시험에서 잡을 예를 하나도 잡지 못했다</button>
+      <button class="opt">알림이 한 번도 울리지 않았다</button>
+      <button class="opt">알림 14번 중 실제 문서 생성 코드에서 울린 것은 3번이고 나머지는 임시 스크립트였다</button>
+      <button class="opt">확인된 실수가 1건 있었다</button>
+    </div>
+    <div class="exp">알림 대부분이 노리던 대상 밖에서 울렸다. 그래서 삭제 대신 범위를 좁히기로 했다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q3</span>한 번도 울리지 않은 훅을 발견했을 때 먼저 할 일은?</div>
+    <div class="opts">
+      <button class="opt">시도가 없어서인지, 가이드가 잘 작동해서인지 가른다</button>
+      <button class="opt">바로 삭제한다</button>
+      <button class="opt">알림을 차단으로 바꾼다</button>
+      <button class="opt">규칙 문서에 같은 내용을 한 번 더 적는다</button>
+    </div>
+    <div class="exp">울리지 않은 이유가 둘로 갈린다. 원인을 가린 뒤에 유지·수정·삭제를 판단한다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+function seg(id, cb){const el=document.getElementById(id);el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb&&cb(b.dataset.v)});return ()=>el.querySelector('.on').dataset.v}
+
+/* ---------- one-by-one ---------- */
+(function(){
+  const NAMES=['A. 표 서식 스킬 추가','B. 규칙 문서 정리','C. 라벨 검사 추가','D. 재저장 알림 추가'];
+  let eff=[], hist=[], noise=2.5, base=10, week=0, revealed=false;
+  const box=document.getElementById('oChg'), msg=document.getElementById('oMsg');
+  function newGame(){
+    const bad=Math.floor(Math.random()*4);
+    eff=NAMES.map((_,i)=>i===bad? +(1.5+Math.random()*1.5) : -(1+Math.random()*2));
+    hist=[]; week=0; revealed=false;
+    box.innerHTML=NAMES.map((n,i)=>`<label><span><input type="checkbox" data-i="${i}"> ${n}</span><span class="eff" id="e${i}">효과: ?</span></label>`).join('');
+    msg.innerHTML='변경을 고른 뒤 “1주 운영하기”. 기준선(아무것도 바꾸지 않은 주)도 한두 주 재 두면 비교가 쉬워진다.';
+    draw();
+  }
+  function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+  function run(){
+    const on=[...box.querySelectorAll('input')].map(b=>b.checked);
+    const mu=base+on.reduce((s,o,i)=>s+(o?eff[i]:0),0);
+    const y=Math.max(0,Math.round(mu+gauss()*noise));
+    week++; hist.push({w:week,on,y});
+    const k=on.filter(Boolean).length;
+    msg.innerHTML = k===0?`기준선 주: 지적 <b>${y}건</b>.`
+      : k===1?`<b>${NAMES[on.indexOf(true)]}</b>만 적용: 지적 <b>${y}건</b>. 기준선과 비교해 보자.`
+      : `${k}개를 동시에 적용: 지적 <b>${y}건</b>. 이 변화가 어느 변경 때문인지는 이 주의 기록만으로는 가를 수 없다.`;
+    draw();
+  }
+  function draw(){
+    const svg=document.getElementById('oPlot'); svg.innerHTML=''; const {S}=HB;
+    const n=Math.max(8,hist.length), x=i=>50+(i-0.5)*(490/n), maxY=Math.max(18,...hist.map(h=>h.y)), y=v=>170-150*v/maxY;
+    for(let v=0;v<=maxY;v+=Math.ceil(maxY/4)){S('line',{x1:40,x2:545,y1:y(v),y2:y(v),class:'gridline'},svg);S('text',{x:34,y:y(v)+4,'text-anchor':'end','font-size':11,class:'svgmono'},svg).textContent=v}
+    S('text',{x:40,y:12,'font-size':11,class:'svgdim'},svg).textContent='주간 연구자 지적 건수';
+    hist.forEach((h,i)=>{
+      const k=h.on.filter(Boolean).length; const c=k===0?'var(--text-faint)':k===1?'var(--accent)':'var(--accent-2)';
+      S('rect',{x:x(i+1)-10,y:y(h.y),width:20,height:170-y(h.y),rx:4,fill:c},svg);
+      S('text',{x:x(i+1),y:190,'text-anchor':'middle','font-size':10,class:'svgmono'},svg).textContent=h.on.map((o,j)=>o?'ABCD'[j]:'').join('')||'기준';
+    });
+    S('text',{x:545,y:206,'text-anchor':'end','font-size':10.5,class:'svgdim'},svg).textContent='회색 = 기준선 · 보라 = 하나만 · 분홍 = 여러 개 동시';
+  }
+  document.getElementById('oRun').onclick=run;
+  document.getElementById('oReset').onclick=newGame;
+  document.getElementById('oReveal').onclick=()=>{eff.forEach((e,i)=>{const el=document.getElementById('e'+i);el.textContent='효과: '+(e>0?'+':'')+e.toFixed(1)+'건/주';el.style.color=e>0?'var(--bad)':'var(--ok)'});msg.innerHTML+='<br><br>빨간 값이 해로운 변경이다. 한꺼번에 켠 주만으로 이것을 찾을 수 있었는지 돌아보자.'};
+  seg('oNoise',v=>{noise=+v});
+  newGame();
+})();
+
+/* ---------- test bench ---------- */
+(function(){
+  const CASES=[
+    {s:'df$bmi <- coalesce(df$bmi, 0)', c:true},
+    {s:'y <- dplyr::coalesce(a, b)', c:true},
+    {s:'setwd("/home/lab/project")', c:true},
+    {s:'setwd("C:/Users/lab/data")', c:true},
+    {s:'# coalesce()는 쓰지 않는다', c:false},
+    {s:'path <- here::here("data", "cohort.csv")', c:false},
+    {s:'coalesce_note <- "결측은 NA로 둔다"', c:false},
+    {s:'x <- ifelse(is.na(x), 0, x)', c:false},
+    {s:'setwd("..")', c:false},
+    {s:'# setwd("/old/path") 대신 here() 사용', c:false},
+    {s:'tbl <- read.csv(here("data", "a.csv"))', c:false},
+    {s:'replace_na(df, list(bmi = 0))', c:false}
+  ];
+  const V={v1:'coalesce|setwd', v2:'coalesce\\s*\\(|setwd\\s*\\(', v3:'^(?!\\s*#).*(\\bcoalesce\\s*\\(|setwd\\(\\s*["\'](\\/|[A-Za-z]:))'};
+  const inp=document.getElementById('bRe'), lines=document.getElementById('bLines'), err=document.getElementById('bErr');
+  function run(){
+    let re; try{re=new RegExp(inp.value);err.textContent=''}catch(e){err.textContent='정규식 오류: '+e.message;return}
+    let tp=0,fn=0,fp=0,tn=0;
+    lines.innerHTML=CASES.map(k=>{const hit=inp.value?re.test(k.s):false;const cls=k.c?(hit?'tp':'fn'):(hit?'fp':'tn');if(cls==='tp')tp++;if(cls==='fn')fn++;if(cls==='fp')fp++;if(cls==='tn')tn++;
+      const lab={tp:'잡음',fn:'놓침',fp:'오탐',tn:'넘김'}[cls], col={tp:'var(--ok)',fn:'var(--warn)',fp:'var(--bad)',tn:'var(--text-faint)'}[cls];
+      return `<div class="${cls}"><span class="tag2 ${k.c?'exp-c':'exp-p'}">${k.c?'잡을 예':'넘길 예'}</span><span>${k.s.replace(/</g,'&lt;')}</span><span class="res" style="color:${col}">${lab}</span></div>`}).join('');
+    document.getElementById('bCM').innerHTML=`<div class="h"></div><div class="h">알림</div><div class="h">조용</div><div class="h" style="text-align:right">잡을 예</div><div><div class="n" style="color:var(--ok)">${tp}</div>잡음</div><div><div class="n" style="color:var(--warn)">${fn}</div>놓침</div><div class="h" style="text-align:right">넘길 예</div><div><div class="n" style="color:var(--bad)">${fp}</div>오탐</div><div><div class="n">${tn}</div>넘김</div>`;
+    document.getElementById('bRec').textContent=tp+' / 4'; document.getElementById('bSpec').textContent=tn+' / 8';
+    const v=document.getElementById('bVer'); const ok=tp===4&&tn===8;
+    v.textContent=ok?'시험 통과':fn?'놓치는 예가 있음':'오탐이 있음'; v.style.color=ok?'var(--ok)':fn?'var(--warn)':'var(--bad)';
+  }
+  document.querySelectorAll('[data-re]').forEach(b=>b.onclick=()=>{inp.value=V[b.dataset.re];run()});
+  inp.addEventListener('input',run); inp.value=V.v1; run();
+})();
+
+/* ---------- fires ---------- */
+(function(){
+  const f1=document.getElementById('f1'), f2=document.getElementById('f2'), t=document.getElementById('f2txt'), nb=document.getElementById('fNarrow');
+  f1.innerHTML='<i class="real" title="실제 금지 패턴 확인"></i><i class="unk" title="파일이 바뀌어 확인 못 함"></i>';
+  const arr=[]; for(let i=0;i<14;i++) arr.push(i%5===2&&arr.filter(a=>a==='real').length<3?'real':'tmp');
+  while(arr.filter(a=>a==='real').length<3){arr[arr.lastIndexOf('tmp')]='real'}
+  f2.innerHTML=arr.map(a=>`<i class="${a}" title="${a==='real'?'grade_all.py':'임시 스크립트'}"></i>`).join('');
+  function draw(){
+    f2.querySelectorAll('i.tmp').forEach(i=>i.classList.toggle('gone',nb.checked));
+    t.textContent=nb.checked?'알림 3번, 모두 실제 문서 생성 코드. 임시 스크립트 11번은 울리지 않는다.':'알림 14번 중 실제 문서 생성 코드에서 3번, 임시 스크립트에서 11번.';
+  }
+  nb.onchange=draw; draw();
+})();
+
+/* ---------- checklist ---------- */
+(function(){
+  const Q=[
+    {k:'intro',t:'규칙 파일에 프로젝트 소개 글이나 일반 상식이 들어 있다',bad:true},
+    {k:'twice',t:'같은 지적을 두 번 이상 받은 실수가 있다',bad:true},
+    {k:'log',t:'그 지적을 어딘가에 기록해 두었다'},
+    {k:'check',t:'자동 검사나 훅이 하나 이상 있다'},
+    {k:'bench',t:'그 검사를 잡을 예와 넘길 예로 시험했다'},
+    {k:'count',t:'검사·훅이 얼마나 울리는지 집계한다'}
+  ];
+  const st={}; const list=document.getElementById('cList'), out=document.getElementById('cOut');
+  list.innerHTML=Q.map(q=>`<label class="toggle"><input type="checkbox" data-k="${q.k}"> ${q.t}</label>`).join('');
+  list.querySelectorAll('input').forEach(i=>i.onchange=()=>{st[i.dataset.k]=i.checked;draw()});
+  function draw(){
+    let s;
+    if(st.intro) s='<b>1. 규칙 파일 줄이기</b><br>소개 글과 상식을 빼고 모델이 모르는 고유 규칙만 남기세요. 비용이 줄고, 남은 규칙이 더 잘 보입니다.';
+    else if(st.twice && !st.log) s='<b>2. 반복 지적 기록하기</b><br>두 번 받은 지적을 어디서 틀렸는지와 함께 적어 두세요. 다음에 검사로 옮길 후보가 됩니다.';
+    else if((st.twice||st.log) && !st.check) s='<b>3. 검사 하나 만들기</b><br>기록 중 가장 자주 나고 분명한 실수 하나를 골라 계산형 검사로 옮기세요.';
+    else if(st.check && !st.bench) s='<b>시험하기</b><br>만든 검사를 잡을 예와 넘길 예 양쪽으로 시험하세요. 이 장의 시험대처럼 오탐과 놓침을 같이 봅니다.';
+    else if(st.check && !st.count) s='<b>실제로 써 보기</b><br>알림이 언제, 어디서 울렸는지 기록하고 모아 보세요. 그 기록이 유지·수정·삭제의 근거가 됩니다.';
+    else if(st.check && st.bench && st.count) s='<b>조향 루프가 돌고 있습니다</b><br>집계에서 안 울린 훅과 너무 자주 울리는 훅을 점검하고, 바꿀 때는 한 번에 하나씩 바꾸세요.';
+    else s='해당하는 항목을 켜 보세요. 상태에 맞는 다음 한 걸음을 보여 드립니다.';
+    out.innerHTML=s;
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
