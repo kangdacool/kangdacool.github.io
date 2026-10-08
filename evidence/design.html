@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>진단 정확도 연구의 설계 · EvidenceBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .binrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  @media (max-width:760px){.binrow{grid-template-columns:1fr 1fr}}
+  .mini2x2{border-collapse:collapse;font-family:var(--mono);font-size:13.5px;width:100%}
+  .mini2x2 th,.mini2x2 td{border:1px solid var(--border);padding:6px 8px;text-align:center}
+  .mini2x2 th{font-family:var(--font);font-size:12.5px;color:var(--text-faint);font-weight:600;background:var(--surface)}
+  .mini2x2 td.miss{color:var(--text-faint);text-decoration:line-through}
+  .dom{border-left:4px solid var(--accent);padding-left:14px}
+  .dom b{display:block}
+  .dom p{font-size:15px;color:var(--text-dim);margin:.35em 0}
+  .dom .sq{font-size:13.5px;color:var(--text-faint);font-style:italic}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 02</div>
+  <h1>진단 정확도 연구의 설계</h1>
+  <p class="lead">진단 연구에도 코호트, 환자-대조군, 무작위 시험이 있다. 다만 설계 이름이 가리키는 것은 “대상자를 어떻게 모으고 따라가는가”이고, “무엇을 묻는가”는 별개의 축이다. 이 장에서는 같은 이름이 진단 정확도 질문 안에서 어떻게 다시 해석되는지 보고, 설계가 잘못되면 정확도가 어느 방향으로 틀리는지를 두 가지 실험으로 확인한다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>단일 관문(single-gate)과 이중 관문(two-gate) 표본추출을 구분하고, 이중 관문 설계가 정확도를 부풀리는 이유를 설명할 수 있다.</li>
+      <li>음성자 일부만 기준검사를 받을 때 생기는 부분 확인 편향의 방향을 예측할 수 있다.</li>
+      <li>QUADAS-2의 네 영역이 각각 어떤 설계 결함을 겨냥하는지 말할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>질문 축과 설계 축</h2>
+  <p>근거 위계에서 어떤 연구의 위치는 두 좌표로 정해진다. 하나는 질문(정확도인가, 환자 결과인가), 다른 하나는 설계(대상을 어떻게 모으고 따라가는가)다. 진단 연구 안에서 익숙한 설계 이름은 이렇게 다시 읽힌다.</p>
+  <div class="tblwrap"><table class="tbl">
+    <tr><th>설계 이름</th><th>진단 연구 안에서의 모습</th><th>주로 답하는 질문</th></tr>
+    <tr><td><b>단면연구</b><br><span class="faint" style="font-size:13px">단일 관문</span></td><td>그 병이 의심되는 사람을 연속으로 모아 모두에게 지표검사와 기준검사를 같은 시점에 시행</td><td>검사는 정확한가</td></tr>
+    <tr><td><b>코호트</b><br><span class="faint" style="font-size:13px">전향 등록, 지연 확인 포함</span></td><td>의심 환자를 전향적으로 모아 지표검사와 기준검사를 비교. 기준검사를 그 자리에서 할 수 없으면 추적관찰 중 드러난 결과로 질병 여부를 판정(지연 확인)</td><td>검사는 정확한가</td></tr>
+    <tr><td><b>환자-대조군</b><br><span class="faint" style="font-size:13px">이중 관문</span></td><td>확진된 환자와 질병이 없는 사람을 따로 모아 지표검사를 시행</td><td>검사는 정확한가 (편향 위험 큼)</td></tr>
+    <tr><td><b>무작위 시험</b></td><td>사람들을 검사 전략 A와 B에 무작위 배정하고 환자 결과를 비교. 두 검사의 정확도를 무작위로 비교하는 설계도 있으나 드묾</td><td>검사를 쓰면 환자가 나아지나</td></tr>
+  </table></div>
+
+  <h2 id="s2"><span class="num">02</span>스펙트럼 편향</h2>
+  <p>이중 관문 설계에서는 확진된 환자를 병원에서, 대조군을 건강한 자원자에서 모으는 경우가 많다. 그러면 표본에는 중증 환자와 완전히 건강한 사람, 즉 분포의 양 끝만 남는다. 실제 검사가 쓰이는 자리에는 경증 환자와, 증상은 있지만 다른 병을 가진 사람이 섞여 있다. 아래 실험은 같은 표지자, 같은 절단점으로 두 표본을 만들어 정확도를 비교한다.</p>
+
+  <div class="sim" id="sim-spectrum">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">스펙트럼 편향: 단일 관문 대 이중 관문</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <svg id="spDens" viewBox="0 0 560 330" style="width:100%;display:block" role="img" aria-label="두 표본의 표지자 분포"></svg>
+        <svg id="spRoc" viewBox="0 0 560 250" style="width:100%;display:block;margin-top:6px" role="img" aria-label="두 표본의 ROC 곡선"></svg>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">절단점 <b id="spTV"></b></div><input type="range" id="spT" min="-1" max="4.5" step="0.05" value="1.9"></label>
+        <label class="ctrl"><div class="lab">이중 관문 환자군 중 중증 비율 <b id="spSevV"></b></div><input type="range" id="spSev" min="25" max="100" step="5" value="50"></label>
+        <label class="ctrl"><div class="lab">의심 환자 중 비질병자의 표지자 평균 <b id="spMimV"></b></div><input type="range" id="spMim" min="0" max="1.6" step="0.1" value="0.6"></label>
+        <p class="dim" style="font-size:13px;line-height:1.6;margin-top:10px">표지자는 경증·중등도·중증에서 평균 1.4·2.4·3.4, 건강인에서 0, 표준편차는 모두 1로 둔 가상 모형이다. 단일 관문 표본의 환자 구성은 경증 40%, 중등도 35%, 중증 25%로 고정했다.</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">단일 관문 민감도·특이도</div><div class="v" id="spS1" style="font-size:18px"></div></div>
+      <div><div class="k">이중 관문 민감도·특이도</div><div class="v" id="spS2" style="font-size:18px;color:var(--accent-2)"></div></div>
+      <div><div class="k">진단 오즈비 (단일 → 이중)</div><div class="v" id="spDOR" style="font-size:18px"></div></div>
+    </div>
+    <div class="sim-foot" id="spFoot"></div>
+  </div>
+  <p>중증 비율 막대를 올리고 비질병자 평균 막대를 오른쪽으로 옮길수록 두 ROC 곡선의 간격이 벌어진다. 이중 관문 표본에서 얻은 민감도와 특이도는 둘 다 높게 나오지만, 그 검사를 실제로 쓰게 될 의심 환자에게는 그만큼의 성능이 나오지 않는다. 설계 결함이 있는 진단 연구가 정확도를 과대평가한다는 점은 경험적 연구에서도 확인되었다(Lijmer 1999).</p>
+
+  <h2 id="s3"><span class="num">03</span>부분 확인 편향</h2>
+  <p>기준검사가 침습적이거나 비싸면, 지표검사 양성자는 대부분 기준검사를 받고 음성자는 일부만 받는 일이 흔하다. 기준검사를 받은 사람만으로 2×2 표를 만들면 정확도가 틀어진다. 어느 쪽으로 틀어지는지 예측해 본 뒤 막대를 움직여 확인한다.</p>
+
+  <div class="sim" id="sim-verify">
+    <div class="sim-head"><span class="pill exp">EXPERIMENT</span><span class="title">음성자 일부만 기준검사를 받을 때</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="grid2" style="gap:12px">
+          <div><div class="dim" style="font-size:13px;margin-bottom:6px">모두 확인했을 때 (참값)</div><table class="mini2x2" id="vfTrue"></table></div>
+          <div><div class="dim" style="font-size:13px;margin-bottom:6px">확인된 사람만 셌을 때</div><table class="mini2x2" id="vfObs"></table></div>
+        </div>
+        <div class="bars2" id="vfBars" style="margin-top:16px"></div>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">유병률 <b id="vfPV"></b></div><input type="range" id="vfP" min="2" max="50" step="1" value="20"></label>
+        <label class="ctrl"><div class="lab">참 민감도 <b id="vfSeV"></b></div><input type="range" id="vfSe" min="50" max="99" step="1" value="80"></label>
+        <label class="ctrl"><div class="lab">참 특이도 <b id="vfSpV"></b></div><input type="range" id="vfSp" min="50" max="99" step="1" value="85"></label>
+        <label class="ctrl"><div class="lab">양성자 중 확인 비율 <b id="vfVpV"></b></div><input type="range" id="vfVp" min="10" max="100" step="5" value="100"></label>
+        <label class="ctrl"><div class="lab">음성자 중 확인 비율 <b id="vfVnV"></b></div><input type="range" id="vfVn" min="5" max="100" step="5" value="20"></label>
+        <label class="toggle"><input type="checkbox" id="vfFix"> 확인 비율의 역수로 가중 (Begg·Greenes)</label>
+      </div>
+    </div>
+    <div class="sim-foot" id="vfFoot"></div>
+  </div>
+  <p>음성자를 덜 확인하면 거짓음성 칸이 줄어 보이므로 민감도는 부풀고, 참음성 칸도 같이 줄어 특이도는 깎인다. 확인 여부가 지표검사 결과에만 달려 있다면, 확인된 칸을 확인 비율로 나눠 원래 크기로 되돌리는 방식으로 보정할 수 있다(Begg & Greenes 1983). 가중 스위치를 켜면 참값이 복원된다. 확인 여부가 결과 외의 임상 정보에도 달려 있으면 이 단순 보정으로는 부족하다.</p>
+
+  <h2 id="s4"><span class="num">04</span>QUADAS-2의 네 영역</h2>
+  <p>진단 정확도 연구의 비뚤림 위험은 흔히 QUADAS-2로 평가한다(Whiting 2011). 네 영역 모두 비뚤림 위험을 판정하고, 앞의 세 영역은 적용 가능성도 함께 판정한다. 이 장의 두 실험은 각각 첫째와 넷째 영역에 해당한다.</p>
+  <div class="grid2" style="gap:18px">
+    <div class="dom"><b>환자 선택</b><p>표본이 실제 사용 집단을 닮았는가. 스펙트럼 편향의 자리.</p><div class="sq">신호 질문 예: Was a case-control design avoided?</div></div>
+    <div class="dom"><b>지표검사</b><p>지표검사 판독이 기준검사 결과와 독립인가, 절단점을 미리 정했는가.</p><div class="sq">If a threshold was used, was it pre-specified?</div></div>
+    <div class="dom"><b>기준검사</b><p>기준검사가 목표 질환을 올바르게 분류하는가, 지표검사 결과를 모르고 판독했는가.</p><div class="sq">Is the reference standard likely to correctly classify the target condition?</div></div>
+    <div class="dom"><b>흐름과 시점</b><p>모두 같은 기준검사를 받았는가, 두 검사 사이 간격이 적절한가. 부분 확인 편향의 자리.</p><div class="sq">Did all patients receive a reference standard?</div></div>
+  </div>
+
+  <div class="sim" id="sim-sort">
+    <div class="sim-head"><span class="pill game">GAME</span><span class="title">연구 설명을 설계로 분류</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="pool">
+        <span class="token" data-cat="tg">확진된 폐암 환자 100명과 건강검진 수검자 100명에게 새 혈액검사 시행</span>
+        <span class="token" data-cat="rct">의심 환자를 CT 우선 전략과 표준 진료에 무작위 배정해 재입원율 비교</span>
+        <span class="token" data-cat="sg">흉통으로 응급실에 온 환자를 연속으로 모아 모두에게 새 검사와 관상동맥조영술 시행</span>
+        <span class="token" data-cat="dv">조직검사를 할 수 없는 병변을 2년 추적해 진행 여부로 질병을 판정</span>
+        <span class="token" data-cat="sg">인지저하가 의심되어 의뢰된 노인을 연속 등록해 선별척도와 전문의 진단을 함께 시행</span>
+        <span class="token" data-cat="tg">치매 진단 환자군과 지역사회 정상 노인군을 따로 모집해 선별척도 점수 비교</span>
+        <span class="token" data-cat="dv">검사 시점의 판정 대신 1년 추적 중 확정된 진단을 기준으로 정확도 계산</span>
+        <span class="token" data-cat="rct">선별 프로그램 참여 지역과 비참여 지역을 무작위로 정해 사망률 비교</span>
+      </div>
+      <div class="binrow">
+        <div class="bin" data-cat="sg"><div class="bt">단일 관문 단면연구</div><div class="items"></div></div>
+        <div class="bin" data-cat="dv"><div class="bt">지연 확인 코호트</div><div class="items"></div></div>
+        <div class="bin" data-cat="tg"><div class="bt">이중 관문 환자-대조군</div><div class="items"></div></div>
+        <div class="bin" data-cat="rct"><div class="bt">검사 전략 무작위 시험</div><div class="items"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn sm primary" data-check>채점</button><button class="btn sm" data-reset>다시</button><span data-out class="dim" style="font-size:14px"></span>
+      </div>
+    </div></div>
+  </div>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q1</span>이중 관문 설계에서 민감도와 특이도는 대체로 어느 방향으로 틀리는가?</div>
+    <div class="opts">
+      <button class="opt">민감도는 낮게, 특이도는 높게</button>
+      <button class="opt">둘 다 낮게</button>
+      <button class="opt">둘 다 높게</button>
+      <button class="opt">방향 없이 정밀도만 떨어짐</button>
+    </div>
+    <div class="exp">중증 환자만 남으면 민감도가, 건강인만 남으면 특이도가 올라간다. 분포의 양 끝만 비교하므로 두 값이 함께 부풀려진다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q2</span>양성자는 모두, 음성자는 10%만 기준검사를 받았다. 확인된 사람만으로 계산한 민감도는?</div>
+    <div class="opts">
+      <button class="opt">참값보다 높다</button>
+      <button class="opt">참값보다 낮다</button>
+      <button class="opt">참값과 같다</button>
+      <button class="opt">특이도만 영향을 받는다</button>
+    </div>
+    <div class="exp">거짓음성은 음성자 안에 있으므로 90%가 표에서 빠진다. 분모가 작아져 민감도가 부풀고, 같은 이유로 특이도는 깎인다.</div>
+  </div>
+  <div class="quiz" data-ans="3">
+    <div class="q"><span class="qn">Q3</span>QUADAS-2에서 “모든 환자가 같은 기준검사를 받았는가”를 묻는 영역은?</div>
+    <div class="opts">
+      <button class="opt">환자 선택</button>
+      <button class="opt">지표검사</button>
+      <button class="opt">기준검사</button>
+      <button class="opt">흐름과 시점</button>
+    </div>
+    <div class="exp">흐름과 시점 영역은 기준검사를 누가, 언제, 어떤 것으로 받았는지를 본다. 부분 확인 편향과 차등 확인 편향이 여기서 걸러진다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+<script src="assets/common.js"></script>
+<script>
+/* ---------- spectrum ---------- */
+(function(){
+  const {S,pnorm,dnorm}=EB; const g=id=>document.getElementById(id);
+  const dens=g('spDens'), roc=g('spRoc');
+  const xmin=-3, xmax=6.5, X=x=>40+(x-xmin)/(xmax-xmin)*500;
+  function model(){
+    const sev=+g('spSev').value/100, mim=+g('spMim').value;
+    return {
+      one:{dis:[[0.40,1.4],[0.35,2.4],[0.25,3.4]], non:[[1,mim]]},
+      two:{dis:[[1-sev,2.4],[sev,3.4]], non:[[1,0]]}
+    };
+  }
+  const sensOf=(m,t)=>m.dis.reduce((s,[w,mu])=>s+w*(1-pnorm(t,mu,1)),0);
+  const specOf=(m,t)=>m.non.reduce((s,[w,mu])=>s+w*pnorm(t,mu,1),0);
+  const pdf=(arr,x)=>arr.reduce((s,[w,mu])=>s+w*dnorm(x,mu,1),0);
+  function panel(y0,h,m,title,col){
+    S('text',{x:40,y:y0+14,'font-size':13,'font-weight':700,class:'svgtext'},dens).textContent=title;
+    S('line',{x1:40,x2:540,y1:y0+h,y2:y0+h,class:'axisline'},dens);
+    const sc=h-26;
+    const path=arr=>{let d='';for(let i=0;i<=200;i++){const x=xmin+(xmax-xmin)*i/200;d+=(i?'L':'M')+X(x).toFixed(1)+','+(y0+h-pdf(arr,x)/0.45*sc).toFixed(1)}return d};
+    S('path',{d:path(m.non)+`L${X(xmax)},${y0+h}L${X(xmin)},${y0+h}Z`,fill:'var(--text-faint)','fill-opacity':.22,stroke:'var(--text-faint)','stroke-width':1.5},dens);
+    S('path',{d:path(m.dis)+`L${X(xmax)},${y0+h}L${X(xmin)},${y0+h}Z`,fill:col,'fill-opacity':.25,stroke:col,'stroke-width':2},dens);
+  }
+  function rocPanel(M,t){
+    roc.innerHTML='';
+    const ox=60,oy=225,w=200,h=200;
+    S('rect',{x:ox,y:oy-h,width:w,height:h,fill:'none',stroke:'var(--border)'},roc);
+    S('line',{x1:ox,y1:oy,x2:ox+w,y2:oy-h,stroke:'var(--border)','stroke-dasharray':'4 4'},roc);
+    S('text',{x:ox+w/2,y:oy+20,'text-anchor':'middle','font-size':12,class:'svgdim'},roc).textContent='1 − 특이도';
+    S('text',{x:ox-30,y:oy-h/2,'text-anchor':'middle','font-size':12,class:'svgdim',transform:`rotate(-90 ${ox-30} ${oy-h/2})`},roc).textContent='민감도';
+    [['one','var(--accent)'],['two','var(--accent-2)']].forEach(([k,c])=>{
+      let d='';for(let i=0;i<=120;i++){const tt=xmax-(xmax-xmin)*i/120;const se=sensOf(M[k],tt),fp=1-specOf(M[k],tt);d+=(i?'L':'M')+(ox+fp*w).toFixed(1)+','+(oy-se*h).toFixed(1)}
+      S('path',{d,fill:'none',stroke:c,'stroke-width':2.4},roc);
+      S('circle',{cx:ox+(1-specOf(M[k],t))*w,cy:oy-sensOf(M[k],t)*h,r:6,fill:c,stroke:'var(--bg-elev)','stroke-width':2},roc);
+    });
+    const lx=ox+w+40;
+    S('rect',{x:lx,y:60,width:14,height:4,fill:'var(--accent)'},roc);S('text',{x:lx+22,y:66,'font-size':13,class:'svgtext'},roc).textContent='단일 관문 (의심 환자 연속 등록)';
+    S('rect',{x:lx,y:90,width:14,height:4,fill:'var(--accent-2)'},roc);S('text',{x:lx+22,y:96,'font-size':13,class:'svgtext'},roc).textContent='이중 관문 (확진 환자 + 건강인)';
+    S('text',{x:lx,y:136,'font-size':12.5,class:'svgdim'},roc).textContent='점: 현재 절단점에서의 위치';
+  }
+  function draw(){
+    const t=+g('spT').value, M=model();
+    g('spTV').textContent=t.toFixed(2); g('spSevV').textContent=g('spSev').value+'%'; g('spMimV').textContent=(+g('spMim').value).toFixed(1);
+    dens.innerHTML='';
+    panel(4,150,M.one,'단일 관문: 그 병이 의심되는 사람','var(--accent)');
+    panel(172,150,M.two,'이중 관문: 확진 환자와 건강인','var(--accent-2)');
+    S('line',{x1:X(t),x2:X(t),y1:8,y2:324,stroke:'var(--text)','stroke-width':1.6,'stroke-dasharray':'5 4'},dens);
+    S('text',{x:X(t)+6,y:30,'font-size':12,class:'svgmono'},dens).textContent='절단점';
+    S('text',{x:530,y:30,'text-anchor':'end','font-size':12,class:'svgdim'},dens).textContent='회색: 비질병자 · 색: 환자';
+    rocPanel(M,t);
+    const s1=sensOf(M.one,t),p1=specOf(M.one,t),s2=sensOf(M.two,t),p2=specOf(M.two,t);
+    const dor=(s,p)=>(s/(1-s))/((1-p)/p);
+    g('spS1').textContent=EB.pct(s1,0)+' · '+EB.pct(p1,0);
+    g('spS2').textContent=EB.pct(s2,0)+' · '+EB.pct(p2,0);
+    g('spDOR').textContent=dor(s1,p1).toFixed(1)+' → '+dor(s2,p2).toFixed(1);
+    g('spFoot').innerHTML=`같은 검사, 같은 절단점인데 이중 관문 표본의 진단 오즈비가 <b>${(dor(s2,p2)/dor(s1,p1)).toFixed(1)}배</b>로 나온다. 차이는 전부 표본을 모은 방식에서 온다.`;
+  }
+  ['spT','spSev','spMim'].forEach(id=>g(id).addEventListener('input',draw));
+  draw();
+})();
+
+/* ---------- verification bias ---------- */
+(function(){
+  const g=id=>document.getElementById(id);
+  const N=1000;
+  function tbl(tp,fp,fn,tn,miss){
+    const f=v=>Math.round(v);
+    return `<tr><th></th><th>D+</th><th>D−</th></tr><tr><th>T+</th><td>${f(tp)}</td><td>${f(fp)}</td></tr><tr><th>T−</th><td${miss?' style="color:var(--accent-2);font-weight:700"':''}>${f(fn)}</td><td${miss?' style="color:var(--accent-2);font-weight:700"':''}>${f(tn)}</td></tr>`;
+  }
+  function draw(){
+    const P=+g('vfP').value/100,Se=+g('vfSe').value/100,Sp=+g('vfSp').value/100,vp=+g('vfVp').value/100,vn=+g('vfVn').value/100,fix=g('vfFix').checked;
+    g('vfPV').textContent=g('vfP').value+'%';g('vfSeV').textContent=g('vfSe').value+'%';g('vfSpV').textContent=g('vfSp').value+'%';g('vfVpV').textContent=g('vfVp').value+'%';g('vfVnV').textContent=g('vfVn').value+'%';
+    const D=N*P,ND=N-D,TP=D*Se,FN=D-TP,TN=ND*Sp,FP=ND-TN;
+    const tp=TP*vp,fp=FP*vp,fn=FN*vn,tn=TN*vn;
+    const wtp=fix?tp/vp:tp,wfp=fix?fp/vp:fp,wfn=fix?fn/vn:fn,wtn=fix?tn/vn:tn;
+    g('vfTrue').innerHTML=tbl(TP,FP,FN,TN,false);
+    g('vfObs').innerHTML=tbl(wtp,wfp,wfn,wtn,!fix&&vn<1);
+    const aSe=wtp/(wtp+wfn),aSp=wtn/(wtn+wfp);
+    const rows=[['참 민감도',Se,'var(--text-faint)'],['계산된 민감도',aSe,'var(--accent-2)'],['참 특이도',Sp,'var(--text-faint)'],['계산된 특이도',aSp,'var(--accent)']];
+    g('vfBars').innerHTML=rows.map(r=>`<div class="row"><div>${r[0]}</div><div class="track"><div class="fill" style="width:${(r[1]*100).toFixed(1)}%;background:${r[2]}"></div></div><div class="val">${(r[1]*100).toFixed(1)}%</div></div>`).join('');
+    g('vfFoot').innerHTML=fix?'확인된 칸을 확인 비율로 나누어 원래 크기로 되돌렸다. 확인 여부가 지표검사 결과에만 달려 있으므로 참값이 그대로 복원된다.':`민감도 차이 <b>${((aSe-Se)*100>=0?'+':'')}${((aSe-Se)*100).toFixed(1)}%p</b>, 특이도 차이 <b>${((aSp-Sp)*100>=0?'+':'')}${((aSp-Sp)*100).toFixed(1)}%p</b>. 붉은 숫자가 확인 비율만큼 줄어든 음성자 칸이다.`;
+  }
+  ['vfP','vfSe','vfSp','vfVp','vfVn','vfFix'].forEach(id=>g(id).addEventListener('input',draw));
+  draw();
+})();
+EB.sorter(document.getElementById('sim-sort'));
+</script>
+</body>
+</html>

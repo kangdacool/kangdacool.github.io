@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>정리 · 종합 퀴즈 · 참고문헌 · EvidenceBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .key{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;padding:16px 0;border-bottom:1px solid var(--border)}
+  .key:last-child{border-bottom:0}
+  .key .n{font-family:var(--mono);font-weight:800;color:var(--accent);font-size:15px;padding-top:2px}
+  .key b{display:block;font-size:16.5px;margin-bottom:2px}
+  .key span{font-size:15px;color:var(--text-dim);line-height:1.7}
+  .score{font-family:var(--mono);font-size:15px;margin:10px 0 0}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 07</div>
+  <h1>정리 · 종합 퀴즈 · 참고문헌</h1>
+  <p class="lead">여섯 장의 내용을 홈의 좌표 지도 위에 다시 놓으면, 질문 하나와 설계 하나가 만나는 칸마다 근거의 무게가 다르다는 한 문장으로 모인다.</p>
+
+  <h2 id="s1"><span class="num">01</span>핵심 정리</h2>
+  <div class="card" style="padding:4px 22px">
+    <div class="key"><div class="n">01</div><div><b>LR은 결과에 맞춰 고름</b><span>양성이면 LR+, 음성이면 LR−를 사전 오즈에 곱한다. 질병 여부는 모르는 채로 분자와 분모의 두 가설로 들어간다. LR 값 자체는 학파 중립이고, 사전확률을 환자에 대한 임상 판단으로 쓰면 베이지안 갱신이 된다.</span></div></div>
+    <div class="key"><div class="n">02</div><div><b>LR의 곱셈에는 조건부 독립이 필요함</b><span>같은 병리를 보는 검사끼리 곱하면 검사 후 확률이 과대평가된다.</span></div></div>
+    <div class="key"><div class="n">03</div><div><b>설계 이름은 질문 안에서 다시 해석됨</b><span>진단 정확도 연구의 정점은 의심 환자를 연속 등록한 단면연구들의 체계적 고찰이고, 확진 환자와 건강인을 따로 모으는 환자-대조군 설계는 정확도를 부풀린다. 음성자 일부만 확인하면 민감도는 부풀고 특이도는 깎인다.</span></div></div>
+    <div class="key"><div class="n">04</div><div><b>질문을 옮기면 근거가 내려앉음</b><span>정확도 연구는 “검사가 정확한가”에서는 최상위 근거지만, “검사를 쓰면 환자가 나아지나”에서는 비직접성으로 강등된다. 이 질문의 정점은 검사-치료 전략을 비교한 무작위 시험이다.</span></div></div>
+    <div class="key"><div class="n">05</div><div><b>TPP는 개발 전의 목표, 실행 연구는 효과 다음의 질문</b><span>TPP는 최소·최적 목표를 미리 정한 계획 문서이고, 정확도 목표는 사용 위치의 검사 전 확률과 함께 읽는다. 실행 연구는 효과가 확인된 중재의 채택·도달·충실도를 묻고, 하이브리드 1·2·3형이 효과 연구와의 사이를 잇는다.</span></div></div>
+    <div class="key"><div class="n">06</div><div><b>병인 연구에서는 오분류로 들어옴</b><span>비차등 노출 오분류는 위험비를 1 쪽으로 끌고, 결과 정의의 특이도가 완벽하면 위험비는 보존되고 위험차는 민감도만큼 줄어든다.</span></div></div>
+  </div>
+
+  <h2 id="quiz">종합 퀴즈</h2>
+  <div class="quiz" data-ans="3">
+    <div class="q"><span class="qn">Q1</span>임상의가 병력과 진찰로 “이 환자가 폐색전증일 확률은 30%”라고 판단한 뒤 검사 결과의 LR을 곱했다. 이 계산의 성격은?</div>
+    <div class="opts"><button class="opt">우도비 검정</button><button class="opt">빈도주의 가설검정</button><button class="opt">우도주의 증거 평가</button><button class="opt">주관적 확률의 베이지안 갱신</button></div>
+    <div class="exp">사전확률이 집단 유병률이 아니라 개별 환자에 대한 임상 판단이므로, 이 계산은 주관적 확률을 갱신하는 베이지안 추론이다.</div>
+  </div>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q2</span>새 검사의 정확도를 평가하는 연구 중 OCEBM 2011에서 가장 낮은 단계에 놓이는 것은?</div>
+    <div class="opts"><button class="opt">의심 환자를 연속 등록한 단면연구</button><button class="opt">확진 환자와 건강인을 따로 모은 연구</button><button class="opt">비연속 표본의 단면연구</button><button class="opt">단면연구들의 체계적 고찰</button></div>
+    <div class="exp">환자-대조군(이중 관문) 설계는 진단 정확도 열의 단계 4다. 비연속 표본은 단계 3, 연속 등록 단면연구는 단계 2, 그 체계적 고찰은 단계 1이다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q3</span>CAD 판독 보조를 도입할지 결정하는 권고 패널이 가진 근거가 잘 설계된 정확도 연구뿐이다. 패널이 가장 먼저 따질 것은?</div>
+    <div class="opts"><button class="opt">정확도 향상이 진료 변화와 환자 결과로 이어진다는 고리를 무엇이 받치는가</button><button class="opt">연구의 표본 크기가 충분한가</button><button class="opt">QUADAS-2 점수가 몇 점인가</button><button class="opt">LR+가 10을 넘는가</button></div>
+    <div class="exp">정확도는 대리지표다. 권고의 근거로 쓰려면 정확도에서 환자 결과까지의 고리를 다른 근거로 이어야 하고, 그 정도에 따라 비직접성 강등의 크기가 정해진다.</div>
+  </div>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q4</span>TPP의 최소 민감도 목표가 85%다. 후보 검사의 민감도는 88%(95% CI 79–94%)다. 정확한 보고는?</div>
+    <div class="opts"><button class="opt">최소 목표 충족</button><button class="opt">최적 목표 충족</button><button class="opt">점추정치는 목표 안이나 불확실성이 목표 경계를 가로지름</button><button class="opt">목표 미달</button></div>
+    <div class="exp">점추정치는 85%를 넘지만 신뢰구간 하한 79%가 목표 아래다. 표본을 늘려 정밀도를 높이기 전에는 충족을 단정할 수 없다.</div>
+  </div>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q5</span>효과가 확립된 금연 상담을 30개 보건소에 퍼뜨리는 두 전략을 비교하고, 금연율은 2차 결과로 수집한다. 이 연구는?</div>
+    <div class="opts"><button class="opt">하이브리드 1형</button><button class="opt">하이브리드 3형</button><button class="opt">효과 연구</button><button class="opt">진단 정확도 연구</button></div>
+    <div class="exp">실행 전략의 효용이 1차, 임상 결과가 2차이고, 배정 단위가 기관이다. 하이브리드 3형의 전형이다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q6</span>청구자료로 정의한 결과의 민감도는 70%, 특이도는 99%다. 결과가 드물다면 관찰 위험비에 더 큰 영향을 주는 것은?</div>
+    <div class="opts"><button class="opt">특이도가 100%가 아니라는 점</button><button class="opt">민감도가 70%라는 점</button><button class="opt">둘 다 영향이 없음</button><button class="opt">두 값의 영향이 같음</button></div>
+    <div class="exp">민감도가 위험비를 보존하는 것은 특이도가 100%일 때뿐이다. 특이도가 떨어지면 두 군에 거의 같은 비율의 거짓양성 사례가 더해져 위험비가 1 쪽으로 끌린다. 결과가 드물수록 그 거짓양성이 참 사례에 비해 커지므로 영향이 크다.</div>
+  </div>
+  <div class="score" id="score"></div>
+
+  <h2 id="refs">참고문헌</h2>
+  <ol class="refs">
+    <li><span class="k">LR</span>Fagan TJ. Letter: Nomogram for Bayes theorem. <i>N Engl J Med</i>. 1975;293(5):257. <a href="https://doi.org/10.1056/NEJM197507312930513">doi:10.1056/NEJM197507312930513</a></li>
+    <li><span class="k">LR</span>Royall R. <i>Statistical Evidence: A Likelihood Paradigm</i>. Chapman &amp; Hall; 1997. Monographs on Statistics and Applied Probability 71.</li>
+    <li><span class="k">LR</span>Wilks SS. The large-sample distribution of the likelihood ratio for testing composite hypotheses. <i>Ann Math Stat</i>. 1938. <a href="https://projecteuclid.org/euclid.aoms/1177732360">Project Euclid</a></li>
+    <li><span class="k">설계</span>Whiting PF, Rutjes AW, Westwood ME, et al. QUADAS-2: a revised tool for the quality assessment of diagnostic accuracy studies. <i>Ann Intern Med</i>. 2011;155(8):529-536. <a href="https://pubmed.ncbi.nlm.nih.gov/22007046/">PMID 22007046</a></li>
+    <li><span class="k">설계</span>Lijmer JG, Mol BW, Heisterkamp S, et al. Empirical evidence of design-related bias in studies of diagnostic tests. <i>JAMA</i>. 1999;282(11):1061-1066. <a href="https://pubmed.ncbi.nlm.nih.gov/10493205/">PMID 10493205</a></li>
+    <li><span class="k">설계</span>Begg CB, Greenes RA. Assessment of diagnostic tests when disease verification is subject to selection bias. <i>Biometrics</i>. 1983;39(1). <a href="https://pubmed.ncbi.nlm.nih.gov/6871349/">PMID 6871349</a></li>
+    <li><span class="k">위계</span>OCEBM Levels of Evidence Working Group. The Oxford 2011 Levels of Evidence. Oxford Centre for Evidence-Based Medicine. <a href="https://www.cebm.ox.ac.uk/resources/levels-of-evidence/ocebm-levels-of-evidence">cebm.ox.ac.uk</a></li>
+    <li><span class="k">위계</span>Schünemann HJ, et al.; GRADE Working Group. Grading quality of evidence and strength of recommendations for diagnostic tests and strategies. <i>BMJ</i>. 2008;336(7653):1106. <a href="https://www.bmj.com/content/336/7653/1106">bmj.com</a></li>
+    <li><span class="k">위계</span>JBI Manual for Evidence Synthesis. GRADE for diagnostic test accuracy reviews. <a href="https://jbi-global.atlassian.net/wiki/x/YYBXDg">jbi-global</a></li>
+    <li><span class="k">TPP</span>World Health Organization. Target product profiles, preferred product characteristics and target regimen profiles. <a href="https://www.who.int/our-work/science-division/research-for-health/optimizing-research-processes/product-profiles">who.int</a></li>
+    <li><span class="k">TPP</span>den Boon S, et al. WHO target product profiles for TB preventive treatment. <i>Int J Tuberc Lung Dis</i>. 2022;26(4):302-309. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7612716/">PMC7612716</a></li>
+    <li><span class="k">TPP</span>World Health Organization. Target product profiles: tests for tuberculosis treatment monitoring and optimization. <a href="https://heibib.ub.uni-heidelberg.de/search/Record/1907108521">서지 정보</a></li>
+    <li><span class="k">TPP</span>U.S. Food and Drug Administration. Draft Guidance for Industry and Review Staff: Target Product Profile, A Strategic Development Process Tool. <i>Federal Register</i>. 2007 Mar 30;72 FR 15141. <a href="https://www.govinfo.gov/content/pkg/FR-2007-03-30/pdf/E7-5949.pdf">govinfo.gov</a></li>
+    <li><span class="k">실행</span>Curran GM, Bauer M, Mittman B, Pyne JM, Stetler C. Effectiveness-implementation hybrid designs: combining elements of clinical effectiveness and implementation research to enhance public health impact. <i>Med Care</i>. 2012;50(3):217-226. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3731143/">PMC3731143</a></li>
+    <li><span class="k">실행</span>Landes SJ, McBain SA, Curran GM. An introduction to effectiveness-implementation hybrid designs. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6779135">PMC6779135</a></li>
+    <li><span class="k">실행</span>Proctor E, Silmere H, Raghavan R, et al. Outcomes for implementation research: conceptual distinctions, measurement challenges, and research agenda. <i>Adm Policy Ment Health</i>. 2011;38(2):65-76. <a href="https://doi.org/10.1007/s10488-010-0319-7">doi:10.1007/s10488-010-0319-7</a></li>
+    <li><span class="k">실행</span>Glasgow RE, Vogt TM, Boles SM. Evaluating the public health impact of health promotion interventions: the RE-AIM framework. <i>Am J Public Health</i>. 1999;89(9):1322-1327. <a href="https://pubmed.ncbi.nlm.nih.gov/10474547/">PMID 10474547</a></li>
+  </ol>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+<script src="assets/common.js"></script>
+<script>
+(function(){let ok=0,n=0;const el=document.getElementById('score');document.addEventListener('eb-quiz',e=>{n++;if(e.detail.ok)ok++;el.textContent=`현재 ${n} / 6 문항 풀이 · 정답 ${ok}`+(n===6?(ok===6?' · 모두 맞혔습니다':''):'')})})();
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EvidenceBook · 근거의 좌표</title>
+<meta name="description" content="진단검사의 우도비, 진단 정확도 연구 설계, 질문별 근거 위계, 목표 제품 특성(TPP), 실행 연구와 하이브리드 설계를 직접 조작하며 배우는 인터랙티브 교재.">
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  @media (min-width:961px){.hero{grid-template-columns:.9fr 1.1fr}}
+  .lvkey{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--text-dim);padding:2px 8px 4px}
+  .lvkey i{display:inline-block;width:20px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+  .reads .card b{display:block;font-size:17px;margin-bottom:6px}
+  .reads .card p{margin:0;font-size:15px;color:var(--text-dim);line-height:1.7}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Interactive Evidence Textbook</div>
+      <h1>우도비에서<br><span class="grad">실행 연구까지</span></h1>
+      <p class="byline">kangdacool · 2026.10.08</p>
+      <p class="lead">진단검사의 LR+와 LR−는 어느 학파의 도구인지, 진단 연구는 근거 위계의 어디에 서는지, 같은 코호트·환자-대조군이라는 이름이 진단 연구에서는 왜 다른 뜻이 되는지, 목표 제품 특성(TPP)과 실행 연구는 이 그림의 어디에 놓이는지를 하나의 좌표계 위에서 정리한다. 모든 장에는 숫자를 직접 바꿔 보는 실험이 들어 있다.</p>
+      <div class="cta">
+        <a class="btn primary" href="likelihood.html">1장부터 시작하기 →</a>
+        <a class="btn" href="design.html#sim-spectrum">스펙트럼 편향 실험 먼저 보기</a>
+      </div>
+      <div class="chips">
+        <span class="chip">7개 챕터</span><span class="chip">실험 14개</span><span class="chip">분류 게임 3개</span><span class="chip">장마다 퀴즈</span><span class="chip">OCEBM 2011 · GRADE · QUADAS-2</span><span class="chip">Curran 2012 하이브리드 설계</span>
+      </div>
+    </div>
+    <div class="hero-vis">
+      <svg id="map" viewBox="0 0 620 452" style="width:100%;display:block" role="img" aria-label="질문 유형과 연구 설계의 좌표 지도"></svg>
+      <div class="lvkey"><span>OCEBM 단계</span><span><i style="background:#2B4C7E"></i>1</span><span><i style="background:#4E79A7"></i>2</span><span><i style="background:#86AED6"></i>3</span><span><i style="background:#C9D8EA"></i>4</span><span><i style="background:#E4E0D6"></i>5</span><span><i style="background:transparent;border:1.5px dashed var(--accent-2)"></i>표 밖</span></div>
+      <div class="mapinfo" id="mapInfo"><b>칸을 눌러 보세요</b><span class="dim">가로는 질문, 세로는 연구 설계다. 숫자는 그 질문에서 그 설계가 받는 OCEBM 2011 단계(1이 가장 강함)이고, 빈칸은 그 질문의 표에 해당 설계가 나오지 않는다는 뜻이다.</span></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2>좌표를 읽는 세 가지 규칙</h2>
+    <div class="grid3 reads">
+      <div class="card"><b>질문이 꼭대기를 정함</b><p>치료 효과 질문의 정점은 RCT의 체계적 고찰이지만, 진단 정확도 질문의 정점은 단면연구의 체계적 고찰이다. 피라미드는 하나가 아니라 질문마다 하나씩 있다.</p></div>
+      <div class="card"><b>설계 이름은 질문 안에서 다시 해석됨</b><p>환자-대조군은 병인 연구에서는 효율적인 설계지만, 진단 정확도 연구에서는 중증 환자와 건강인만 비교하게 되어 정확도가 부풀려진다. 단계 번호가 같아도 칸마다 뜻하는 표본과 편향이 다르다.</p></div>
+      <div class="card"><b>질문을 옮기면 근거가 내려앉음</b><p>정확도 연구는 “검사가 정확한가”에서는 최상위 근거지만, “검사를 쓰면 환자가 나아지나”로 질문을 옮기면 간접 근거가 된다. 실행 연구는 이 표 바깥의 다음 질문을 묻는다.</p></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2>챕터</h2>
+    <div class="grid3">
+      <a class="chcard" href="likelihood.html"><div class="eyebrow">Chapter 01</div><h3>우도비와 베이즈 갱신</h3><p>LR+와 LR−의 정의, 검사 결과에 맞춰 LR을 고르는 이유, 사전 오즈에 곱하는 갱신, 학파별 위치, 우도비 검정과의 구분.</p><div class="path"><span>1000명 아이콘</span><span>노모그램</span><span>연속 검사</span></div></a>
+      <a class="chcard" href="design.html"><div class="eyebrow">Chapter 02</div><h3>진단 정확도 연구의 설계</h3><p>단일 관문과 이중 관문, 지연 확인, 검사-치료 RCT. 스펙트럼 편향과 부분 확인 편향을 직접 만들어 본다.</p><div class="path"><span>스펙트럼 편향</span><span>확인 편향</span><span>설계 분류</span></div></a>
+      <a class="chcard" href="hierarchy.html"><div class="eyebrow">Chapter 03</div><h3>질문별 근거 위계</h3><p>OCEBM 2011의 질문별 열, GRADE의 진단 질문 출발점, 정확도에서 환자 결과로 이어지는 검사-치료 사슬.</p><div class="path"><span>위계 비교</span><span>검사-치료 사슬</span><span>질문 분류</span></div></a>
+      <a class="chcard" href="tpp.html"><div class="eyebrow">Chapter 04</div><h3>목표 제품 특성(TPP)</h3><p>개발 전에 최소·최적 목표를 정하는 문서. 진단검사 TPP의 정확도 목표를 ROC 공간과 검사 후 확률로 읽는다.</p><div class="path"><span>ROC 목표 영역</span><span>사용 위치별 해석</span></div></a>
+      <a class="chcard" href="implementation.html"><div class="eyebrow">Chapter 05</div><h3>실행 연구와 하이브리드 설계</h3><p>효능 RCT에서 실행 연구까지의 연속선, 하이브리드 1·2·3형, 실행 결과 지표, 인구집단 효과의 단순화 모형.</p><div class="path"><span>연속선 탐색</span><span>도달×효과</span><span>유형 분류</span></div></a>
+      <a class="chcard" href="etiology.html"><div class="eyebrow">Chapter 06</div><h3>병인 연구 안의 측정 정확도</h3><p>민감도·특이도가 병인 연구에서는 오분류 문제로 들어온다. 노출·결과 오분류가 위험비를 얼마나 움직이는지 계산한다.</p><div class="path"><span>노출 오분류</span><span>결과 오분류</span></div></a>
+      <a class="chcard" href="summary.html"><div class="eyebrow">Chapter 07</div><h3>정리 · 종합 퀴즈 · 참고문헌</h3><p>여섯 장의 핵심을 좌표 위에 다시 놓고, 종합 퀴즈로 확인한다. 본문에 인용한 문헌 목록.</p><div class="path"><span>핵심 정리</span><span>종합 퀴즈</span></div></a>
+    </div>
+  </section>
+</main>
+<script src="assets/common.js"></script>
+<script>
+(function(){
+  const {S}=EB; const svg=document.getElementById('map'), info=document.getElementById('mapInfo');
+  const Q=[
+    {k:'prev',t:['유병률','']},{k:'dx',t:['진단','정확도']},{k:'prog',t:['예후','']},{k:'tx',t:['치료','효과']},
+    {k:'harm',t:['위해','']},{k:'scr',t:['선별','검사']},{k:'impl',t:['실행','']}
+  ];
+  const D=['체계적 고찰','RCT','코호트','단면·조사연구','환자-대조군','증례군','기전 추론'];
+  // [question][designIndex] = [level, OCEBM wording, note]
+  const L={
+    prev:{0:[2,'현지 상황에 맞출 수 있는 조사연구의 체계적 고찰'],3:[1,'현지의 현재 무작위 표본조사 또는 센서스','유병률 질문은 단면 조사가 정점이다. 비무작위 표본은 단계 3.'],5:[4,'증례군']},
+    dx:{0:[1,'기준검사를 일관되게 적용하고 눈가림한 단면연구들의 체계적 고찰'],3:[2,'같은 조건의 개별 단면연구','비연속 표본이거나 기준검사를 일관되게 적용하지 않으면 단계 3.'],4:[4,'환자-대조군 연구, 또는 부실하거나 독립적이지 않은 기준검사','확진 환자와 건강인을 따로 모으면 스펙트럼이 양 끝만 남아 정확도가 부풀려진다. 2장 실험 참고.'],6:[5,'기전 기반 추론']},
+    prog:{0:[1,'시작 코호트(inception cohort) 연구의 체계적 고찰'],1:[3,'무작위 시험의 대조군','예후 질문에서 RCT는 대조군을 코호트처럼 쓸 때만 등장한다.'],2:[2,'시작 코호트 연구','일반 코호트는 단계 3.'],4:[4,'환자-대조군 연구'],5:[4,'증례군 또는 질 낮은 예후 코호트']},
+    tx:{0:[1,'무작위 시험의 체계적 고찰 또는 n-of-1 시험'],1:[2,'무작위 시험, 또는 효과가 극적인 관찰연구','환자 한 명 안에서 무작위로 치료를 바꾸는 n-of-1 시험은 단계 1에 놓인다.'],2:[3,'비무작위 대조 코호트·추적 연구'],4:[4,'환자-대조군 연구'],5:[4,'증례군 또는 역사적 대조 연구'],6:[5,'기전 기반 추론']},
+    harm:{0:[1,'무작위 시험 또는 내포 환자-대조군 연구의 체계적 고찰','이 열은 중재의 흔한 위해를 묻는다. OCEBM 2011에는 병인 열이 없어서, 노출의 해로움을 묻는 병인 연구는 구조가 가장 비슷한 이 열에 비추어 볼 수 있다.'],1:[2,'개별 무작위 시험, 또는 예외적으로 효과가 극적인 관찰연구'],2:[3,'비무작위 대조 코호트, 흔한 위해를 배제할 만큼 큰 시판 후 감시'],4:[4,'환자-대조군 연구','내포 환자-대조군 연구의 체계적 고찰은 단계 1에 놓인다.'],5:[4,'증례군 또는 역사적 대조 연구'],6:[5,'기전 기반 추론']},
+    scr:{0:[1,'무작위 시험의 체계적 고찰','“조기 발견 검사가 할 만한가”는 정확도가 아니라 환자 결과를 묻는다. 그래서 치료 효과 열과 같은 모양이 된다.'],1:[2,'개별 무작위 시험'],2:[3,'비무작위 대조 코호트·추적 연구'],4:[4,'환자-대조군 연구'],5:[4,'증례군 또는 역사적 대조 연구'],6:[5,'기전 기반 추론']}
+  };
+  const COL=['','#2B4C7E','#4E79A7','#86AED6','#C9D8EA','#E4E0D6'];
+  const x0=128,y0=70,cw=68,ch=50;
+  // headers
+  Q.forEach((q,j)=>{
+    const x=x0+j*cw+cw/2;
+    S('text',{x,y:q.t[1]?30:40,'text-anchor':'middle','font-size':14,'font-weight':800,class:'svgtext',fill:q.k==='impl'?'var(--accent-2)':null},svg).textContent=q.t[0];
+    if(q.t[1]) S('text',{x,y:49,'text-anchor':'middle','font-size':13,'font-weight':700,class:'svgdim'},svg).textContent=q.t[1];
+  });
+  D.forEach((d,i)=>{S('text',{x:x0-10,y:y0+i*ch+ch/2+5,'text-anchor':'end','font-size':14,'font-weight':600,class:'svgtext'},svg).textContent=d});
+  const cells=[];
+  Q.forEach((q,j)=>{
+    if(q.k==='impl'){
+      const g=S('g',{class:'cell',tabindex:0,role:'button'},svg);
+      S('rect',{x:x0+j*cw+4,y:y0+3,width:cw-8,height:D.length*ch-6,rx:8,fill:'var(--accent-2-soft)',stroke:'var(--accent-2)','stroke-dasharray':'6 4','stroke-width':1.6},g);
+      ['OCEBM','표에','열','없음'].forEach((w,k)=>S('text',{x:x0+j*cw+cw/2,y:y0+130+k*20,'text-anchor':'middle','font-size':13,'font-weight':700,fill:'var(--accent-2)'},g).textContent=w);
+      g.addEventListener('click',()=>pick(g,null,q,null));
+      cells.push(g); return;
+    }
+    D.forEach((d,i)=>{
+      const v=L[q.k][i];
+      const g=S('g',{class:'cell',tabindex:0,role:'button'},svg);
+      S('rect',{x:x0+j*cw+3,y:y0+i*ch+3,width:cw-6,height:ch-6,rx:7,fill:v?COL[v[0]]:'transparent',stroke:v?'none':'var(--border)','stroke-dasharray':v?null:'3 4'},g);
+      if(v) S('text',{x:x0+j*cw+cw/2,y:y0+i*ch+ch/2+6,'text-anchor':'middle','font-size':17,'font-weight':800,'font-family':'var(--mono)',fill:v[0]<=2?'#fff':'#22252B'},g).textContent=v[0];
+      g.addEventListener('click',()=>pick(g,v,q,d));
+      g.addEventListener('keydown',e=>{if(e.key==='Enter')pick(g,v,q,d)});
+      cells.push(g);
+    });
+  });
+  // etiology marker
+  const hx=x0+4*cw;
+  S('rect',{x:hx,y:y0+D.length*ch+4,width:cw,height:4,rx:2,fill:'var(--accent)'},svg);
+  S('text',{x:hx+cw/2,y:y0+D.length*ch+26,'text-anchor':'middle','font-size':12,class:'svgdim'},svg).textContent='병인 연구와 비슷한 열';
+  const dxx=x0+1*cw;
+  S('rect',{x:dxx,y:y0+D.length*ch+4,width:cw,height:4,rx:2,fill:'var(--ok)'},svg);
+  S('text',{x:dxx+cw/2,y:y0+D.length*ch+26,'text-anchor':'middle','font-size':12,class:'svgdim'},svg).textContent='진단 정확도 연구';
+  function pick(g,v,q,d){
+    cells.forEach(c=>c.classList.toggle('sel',c===g));
+    const qn=q.t.join(' ').trim();
+    if(q.k==='impl'){info.innerHTML=`<b>실행: OCEBM 표 밖의 질문</b><span class="dim">효과가 확인된 중재를 실제 진료와 지역사회에서 어떻게 쓰이게 할지를 묻는다. 결과 지표가 채택, 충실도, 도달 같은 실행 결과라서 OCEBM의 어느 열에도 들어가지 않는다. 설계는 하이브리드 1·2·3형과 실행 시험으로 나뉜다. <a href="implementation.html">5장</a></span>`;return}
+    if(!v){info.innerHTML=`<b>${qn} × ${d}</b><span class="dim">OCEBM 2011의 이 질문 행에는 이 설계가 따로 나오지 않는다.${q.k==='dx'&&d==='코호트'?' 다만 GRADE는 진단이 불확실한 환자에서 지표검사와 기준검사를 직접 비교한 단면·코호트 연구를 ‘높음’에서 출발시킨다. 기준검사를 추적관찰로 대신하는 지연 확인 설계도 진단 코호트의 한 형태다. <a href=\"design.html\">2장</a>':''}${q.k==='dx'&&d==='RCT'?' RCT는 정확도가 아니라 “검사를 쓰면 환자가 나아지나”를 묻는 선별 검사 열에서 정점에 가깝다. <a href=\"hierarchy.html\">3장</a>':''}</span>`;return}
+    info.innerHTML=`<b>${qn} × ${d}: 단계 ${v[0]}</b><span class="dim">OCEBM 문구: ${v[1]}.${v[2]?' '+v[2]:''}</span>`;
+  }
+  pick(cells[Q.findIndex(q=>q.k==='dx')*D.length+3], L.dx[3], Q[1], D[3]);
+})();
+</script>
+</body>
+</html>

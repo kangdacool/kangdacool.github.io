@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>질문별 근거 위계 · EvidenceBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:760px){.cmp{grid-template-columns:1fr}}
+  .cmp select{width:100%;font:inherit;font-size:15px;font-weight:700;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:10px}
+  .binrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  @media (max-width:760px){.binrow{grid-template-columns:1fr 1fr}}
+  .grade{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.grade{grid-template-columns:1fr}}
+  .gl{display:grid;gap:5px;margin-top:10px}
+  .gl div{padding:7px 12px;border-radius:7px;font-size:14px;background:var(--surface);color:var(--text-faint)}
+  .gl div.on{background:var(--accent);color:#fff;font-weight:700}
+  .gl div.on.b{background:var(--accent-2)}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 03</div>
+  <h1>질문별 근거 위계</h1>
+  <p class="lead">흔히 보는 근거 피라미드는 치료 효과 질문용이다. Oxford Centre for Evidence-Based Medicine(OCEBM)의 2011년판 표는 질문 유형마다 열을 따로 두고, GRADE도 진단 질문에 별도의 접근을 둔다. 이 장에서는 질문이 바뀌면 꼭대기 설계가 어떻게 바뀌는지, 그리고 정확도 질문에서 환자 결과 질문으로 옮겨 갈 때 근거가 왜 한 칸 내려앉는지를 본다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>OCEBM 2011 표에서 질문별 단계 1 설계를 말할 수 있다.</li>
+      <li>GRADE에서 진단 정확도 연구의 출발점이 다른 관찰연구와 다른 이유를 설명할 수 있다.</li>
+      <li>정확도 향상이 환자 결과 개선으로 이어지려면 거쳐야 하는 고리를 나열하고, 각 고리를 받치는 근거를 구분할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>질문마다 다른 사다리</h2>
+  <p>OCEBM 2011 표는 단계를 1에서 5까지 두고, 같은 단계 번호라도 질문마다 다른 설계를 넣는다. 두 질문을 골라 나란히 놓아 본다. 진단 정확도와 치료 효과를 비교하면 차이가 가장 크게 드러난다.</p>
+
+  <div class="sim" id="sim-ladder">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">두 질문의 근거 사다리 비교</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="cmp">
+        <div><select id="ldA"></select><div class="ladder" id="ldLA"></div></div>
+        <div><select id="ldB"></select><div class="ladder" id="ldLB"></div></div>
+      </div>
+      <div class="legend" style="margin-top:14px"><span><i style="background:var(--c-sr)"></i>체계적 고찰</span><span><i style="background:var(--c-rct)"></i>무작위 시험</span><span><i style="background:var(--c-cs)"></i>단면·조사연구</span><span><i style="background:var(--c-coh)"></i>코호트</span><span><i style="background:var(--c-cc)"></i>환자-대조군·증례군</span><span><i style="background:var(--c-mech)"></i>기전 추론</span></div>
+    </div></div>
+    <div class="sim-foot" id="ldFoot"></div>
+  </div>
+  <p>표의 모든 단계에는 공통 각주가 붙는다. 연구의 질, 비정밀성, 비직접성(연구의 PICO와 질문의 PICO가 맞지 않음), 연구 간 비일관성, 아주 작은 절대효과가 있으면 단계를 내리고, 효과가 크거나 매우 크면 올릴 수 있다. 단계 번호는 어디서 먼저 찾아볼지를 알려 주는 출발점이고, 최종 판단은 아니다.</p>
+  <div class="callout"><div class="t">병인 연구의 자리</div>OCEBM 2011에는 “무엇이 병을 일으키나”를 묻는 병인 열이 따로 없다. 위해 열은 중재의 위해를 묻는 열이지만, 노출의 해로움을 묻는다는 구조가 가장 비슷해 병인 연구를 비추어 볼 때 쓸 수 있다. 그래서 병인 연구의 근거 확실성은 보통 GRADE로 평가하며, 이때 관찰연구는 ‘낮음’에서 출발해 상향 요인으로 올라간다.</div>
+
+  <h2 id="s2"><span class="num">02</span>GRADE의 출발점</h2>
+  <p>GRADE는 근거의 확실성을 높음, 중등도, 낮음, 매우 낮음의 네 단계로 매긴다. 출발점은 연구 설계가 정하는데, 진단 정확도 질문에서는 규칙이 다르다.</p>
+  <div class="grade">
+    <div class="card"><b>진단 정확도 질문</b><p class="dim" style="font-size:15px;margin:.4em 0">진단이 불확실한 환자에서 지표검사와 적절한 기준검사를 직접 비교한 단면·코호트 연구는 ‘높음’에서 출발한다. 진단 정확도 연구에서는 등급을 올리는 요인의 운용 기준이 아직 확립되지 않았다.</p>
+      <div class="gl"><div class="on">높음 ← 단면·코호트 정확도 연구</div><div>중등도</div><div>낮음</div><div>매우 낮음</div></div></div>
+    <div class="card"><b>치료·병인 등 다른 질문</b><p class="dim" style="font-size:15px;margin:.4em 0">무작위 시험은 ‘높음’, 관찰연구는 ‘낮음’에서 출발한다. 관찰연구는 정해진 상향 요인에 따라 등급이 올라갈 수 있다.</p>
+      <div class="gl"><div class="on">높음 ← 무작위 시험</div><div>중등도</div><div class="on b">낮음 ← 관찰연구</div><div>매우 낮음</div></div></div>
+  </div>
+  <p>Schünemann 등(2008)은 여기에 중요한 단서를 붙였다. 검사 정확도는 환자에게 중요한 결과의 대리지표이므로, 연구 자체에 큰 결함이 없어도 진단검사 사용을 권고하는 근거로는 흔히 낮은 확실성을 준다는 것이다. 다음 절이 그 이유를 실험으로 보여 준다.</p>
+
+  <h2 id="s3"><span class="num">03</span>정확도에서 환자 결과까지의 사슬</h2>
+  <p>새 검사가 기존 검사보다 민감하다고 하자. 환자가 실제로 나아지려면 네 고리가 모두 이어져야 한다. 더 찾아낸 사람이 실제로 다른 진료를 받아야 하고, 그 진료가 효과가 있는 병변이어야 하며, 치료가 실제로 결과를 바꿔야 한다. 정확도 연구가 직접 보여 주는 것은 첫 고리뿐이다.</p>
+
+  <div class="sim" id="sim-chain">
+    <div class="sim-head"><span class="pill exp">EXPERIMENT</span><span class="title">검사-치료 사슬: 민감도 향상과 결과가 바뀐 사람 수</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="chain" id="chChain"></div>
+        <div class="legend" style="margin-top:10px"><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>정확도 연구가 직접 보여 주는 고리</span><span><i style="background:var(--surface);border:1px solid var(--border)"></i>다른 근거나 가정으로 채워야 하는 고리</span></div>
+        <div class="bars2" id="chBars" style="margin-top:16px"></div>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">검사 대상자 <b id="chNV"></b></div><input type="range" id="chN" min="1000" max="100000" step="1000" value="10000"></label>
+        <label class="ctrl"><div class="lab">유병률 <b id="chPV"></b></div><input type="range" id="chP" min="0.5" max="20" step="0.5" value="5"></label>
+        <label class="ctrl"><div class="lab">기존 → 새 검사 민감도 <b id="chSeV"></b></div><input type="range" id="chSe0" min="40" max="95" step="1" value="70"><input type="range" id="chSe1" min="40" max="99" step="1" value="90" style="margin-top:10px"></label>
+        <label class="ctrl"><div class="lab">추가 발견 중 진료가 바뀌는 비율 <b id="chMV"></b></div><input type="range" id="chM" min="0" max="100" step="5" value="80"></label>
+        <label class="ctrl"><div class="lab">그중 치료로 결과가 달라질 병변 비율 <b id="chFV"></b></div><input type="range" id="chF" min="0" max="100" step="5" value="40"></label>
+        <label class="ctrl"><div class="lab">그 병변에서 치료의 절대위험감소 <b id="chAV"></b></div><input type="range" id="chA" min="0" max="50" step="1" value="15"></label>
+      </div>
+    </div>
+    <div class="sim-foot" id="chFoot"></div>
+  </div>
+  <p>민감도는 20%p나 올랐는데 나쁜 결과를 막은 사람은 한 자릿수에 그칠 수 있다. 둘째부터 넷째 고리의 값은 정확도 연구에 들어 있지 않다. 진료가 바뀌는지는 진료 행태 연구가, 결과가 달라질 병변인지는 자연사·과잉진단 연구가, 치료 효과는 치료 시험이 알려 준다. 이 고리들을 가정이나 다른 근거로 이어 붙이는 만큼 비직접성이 생긴다. 검사-치료 전략을 직접 비교한 무작위 시험은 사슬 전체를 한 번에 보므로 이 질문의 꼭대기에 선다.</p>
+
+  <div class="sim" id="sim-sort">
+    <div class="sim-head"><span class="pill game">GAME</span><span class="title">연구 질문을 OCEBM 열로 분류</span></div>
+    <div class="sim-body one"><div class="sim-view">
+      <div class="pool">
+        <span class="token" data-cat="scr">AI 판독 보조를 쓰는 유방촬영 선별이 유방암 사망을 줄이는가</span>
+        <span class="token" data-cat="dx">새 혈액검사는 결핵 의심 환자에서 배양 결과를 얼마나 맞히는가</span>
+        <span class="token" data-cat="harm">장기간의 미세먼지 노출이 폐암 위험을 높이는가</span>
+        <span class="token" data-cat="prog">경도인지장애 진단 후 5년 안에 치매로 진행하는 비율은</span>
+        <span class="token" data-cat="dx">선별척도 절단점 5점의 민감도와 특이도는</span>
+        <span class="token" data-cat="harm">교대근무가 2형 당뇨병 위험을 높이는가</span>
+        <span class="token" data-cat="scr">흉부 X선 컴퓨터 보조 판독을 도입하면 결핵 치료 시작이 빨라지는가</span>
+        <span class="token" data-cat="prog">심근경색 후 첫 1년의 재입원 위험은</span>
+      </div>
+      <div class="binrow">
+        <div class="bin" data-cat="dx"><div class="bt">진단 정확도</div><div class="items"></div></div>
+        <div class="bin" data-cat="scr"><div class="bt">선별·검사의 효과</div><div class="items"></div></div>
+        <div class="bin" data-cat="harm"><div class="bt">위해 (병인)</div><div class="items"></div></div>
+        <div class="bin" data-cat="prog"><div class="bt">예후</div><div class="items"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn sm primary" data-check>채점</button><button class="btn sm" data-reset>다시</button><span data-out class="dim" style="font-size:14px"></span>
+      </div>
+    </div></div>
+  </div>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q1</span>OCEBM 2011에서 진단 정확도 질문의 단계 1은?</div>
+    <div class="opts">
+      <button class="opt">무작위 시험의 체계적 고찰</button>
+      <button class="opt">기준검사를 일관되게 적용하고 눈가림한 단면연구들의 체계적 고찰</button>
+      <button class="opt">시작 코호트 연구의 체계적 고찰</button>
+      <button class="opt">환자-대조군 연구의 체계적 고찰</button>
+    </div>
+    <div class="exp">정확도 질문은 지표검사와 기준검사를 같은 시점에 함께 시행하는 단면 질문이다. 그래서 단면연구가 정점에 선다. 무작위 시험의 체계적 고찰은 치료 효과, 위해, 선별 검사 열의 단계 1에 놓인다.</div>
+  </div>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q2</span>잘 설계된 단면 정확도 연구가 “이 검사를 권고할 것인가”의 근거로 쓰일 때 GRADE 확실성이 흔히 낮아지는 주된 이유는?</div>
+    <div class="opts">
+      <button class="opt">비정밀성</button>
+      <button class="opt">출판 비뚤림</button>
+      <button class="opt">비직접성</button>
+      <button class="opt">연구 간 비일관성</button>
+    </div>
+    <div class="exp">정확도는 환자 결과의 대리지표다. 정확도에서 환자 결과까지의 고리를 다른 근거나 가정으로 채워야 하므로 비직접성으로 강등된다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q3</span>노출과 질병의 관련을 보는 코호트 연구는 OCEBM 2011의 어느 열에 가장 가깝나?</div>
+    <div class="opts">
+      <button class="opt">위해</button>
+      <button class="opt">진단 정확도</button>
+      <button class="opt">유병률</button>
+      <button class="opt">병인 열</button>
+    </div>
+    <div class="exp">OCEBM 2011에는 병인 열이 따로 없다. 위해 열은 원래 중재의 위해를 묻지만 구조가 가장 비슷하고, 그 열에서 비무작위 대조 코호트는 단계 3이다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+<script src="assets/common.js"></script>
+<script>
+/* ---------- ladders ---------- */
+(function(){
+  const g=id=>document.getElementById(id);
+  const C={sr:'var(--c-sr)',rct:'var(--c-rct)',cs:'var(--c-cs)',coh:'var(--c-coh)',cc:'var(--c-cc)',mech:'var(--c-mech)',na:'transparent'};
+  const Q={
+    prev:{t:'유병률: 이 문제는 얼마나 흔한가',r:[['현지의 현재 무작위 표본조사 또는 센서스','cs'],['현지 상황에 맞출 수 있는 조사연구의 체계적 고찰','sr'],['현지 비무작위 표본','cs'],['증례군','cc'],['해당 없음','na']]},
+    dx:{t:'진단 정확도: 이 검사는 정확한가',r:[['기준검사를 일관되게 적용하고 눈가림한 단면연구들의 체계적 고찰','sr'],['같은 조건의 개별 단면연구','cs'],['비연속 표본, 또는 기준검사를 일관되게 적용하지 않은 연구','cs'],['환자-대조군 연구, 또는 부실하거나 독립적이지 않은 기준검사','cc'],['기전 기반 추론','mech']]},
+    prog:{t:'예후: 치료하지 않으면 어떻게 되나',r:[['시작 코호트 연구의 체계적 고찰','sr'],['시작 코호트 연구','coh'],['코호트 연구 또는 무작위 시험의 대조군','coh'],['증례군, 환자-대조군, 질 낮은 예후 코호트','cc'],['해당 없음','na']]},
+    tx:{t:'치료 효과: 이 중재가 도움이 되나',r:[['무작위 시험의 체계적 고찰 또는 n-of-1 시험','sr'],['무작위 시험, 또는 효과가 극적인 관찰연구','rct'],['비무작위 대조 코호트·추적 연구','coh'],['증례군, 환자-대조군, 역사적 대조 연구','cc'],['기전 기반 추론','mech']]},
+    harm:{t:'흔한 위해: 이 중재의 흔한 위해는 무엇인가',r:[['무작위 시험 또는 내포 환자-대조군 연구의 체계적 고찰 등','sr'],['개별 무작위 시험, 또는 예외적으로 효과가 극적인 관찰연구','rct'],['비무작위 대조 코호트, 충분히 큰 시판 후 감시','coh'],['증례군, 환자-대조군, 역사적 대조 연구','cc'],['기전 기반 추론','mech']]},
+    scr:{t:'선별 검사: 조기 발견 검사가 할 만한가',r:[['무작위 시험의 체계적 고찰','sr'],['개별 무작위 시험','rct'],['비무작위 대조 코호트·추적 연구','coh'],['증례군, 환자-대조군, 역사적 대조 연구','cc'],['기전 기반 추론','mech']]}
+  };
+  ['ldA','ldB'].forEach((id,k)=>{const s=g(id);for(const q in Q){const o=document.createElement('option');o.value=q;o.textContent=Q[q].t;s.appendChild(o)}s.value=k?'tx':'dx';s.onchange=draw});
+  function lad(el,q){
+    el.innerHTML=Q[q].r.map((r,i)=>`<div class="rung fadein"><div class="lv">${i+1}</div><div class="bx" style="background:${C[r[1]]};${r[1]==='na'?'border:1px dashed var(--border);color:var(--text-faint)':''}">${r[0]}</div></div>`).join('');
+  }
+  function draw(){
+    const a=g('ldA').value,b=g('ldB').value; lad(g('ldLA'),a); lad(g('ldLB'),b);
+    const top=q=>Q[q].r[0][0];
+    g('ldFoot').innerHTML=a===b?'같은 질문을 골랐다. 한쪽을 바꿔 본다.':`두 질문의 단계 1: <b>${top(a)}</b> / <b>${top(b)}</b>. ${(a==='dx'||b==='dx')&&(a!=='dx'||b!=='dx')?'진단 정확도 열에는 무작위 시험이 없다. 환자-대조군은 여러 열에서 단계 4지만, 진단 열에서는 확진 환자와 건강인을 따로 모으는 이중 관문 표본을 뜻한다.':''}`;
+  }
+  draw();
+})();
+
+/* ---------- chain ---------- */
+(function(){
+  const g=id=>document.getElementById(id);
+  const fmt=v=>v>=100?Math.round(v).toLocaleString():v>=10?v.toFixed(0):v.toFixed(1);
+  function draw(){
+    let N=+g('chN').value,P=+g('chP').value/100,s0=+g('chSe0').value/100,s1=+g('chSe1').value/100,M=+g('chM').value/100,F=+g('chF').value/100,A=+g('chA').value/100;
+    if(s1<s0){s1=s0;g('chSe1').value=Math.round(s0*100)}
+    g('chNV').textContent=N.toLocaleString()+'명';g('chPV').textContent=(P*100).toFixed(1)+'%';g('chSeV').textContent=Math.round(s0*100)+'% → '+Math.round(s1*100)+'%';
+    g('chMV').textContent=Math.round(M*100)+'%';g('chFV').textContent=Math.round(F*100)+'%';g('chAV').textContent=Math.round(A*100)+'%p';
+    const extra=N*P*(s1-s0), changed=extra*M, matter=changed*F, prevented=matter*A;
+    const L=[['추가 참양성',extra,'검사가 더 찾아낸 환자','direct'],['진료가 바뀐 사람',changed,'추가 검사·치료로 이어짐',''],['결과가 달라질 병변',matter,'과잉진단·무해 병변 제외',''],['나쁜 결과를 막은 사람',prevented,'치료의 절대위험감소 적용','']];
+    g('chChain').innerHTML=L.map(l=>`<div class="lk ${l[3]}"><div class="k">${l[0]}</div><div class="v">${fmt(l[1])}</div><div class="d">${l[2]}</div></div>`).join('');
+    const mx=Math.max(extra,1e-9);
+    g('chBars').innerHTML=L.map((l,i)=>`<div class="row"><div>${l[0]}</div><div class="track"><div class="fill" style="width:${(100*l[1]/mx).toFixed(1)}%;background:${i?'var(--accent)':'var(--ok)'}"></div></div><div class="val">${fmt(l[1])}</div></div>`).join('');
+    g('chFoot').innerHTML=prevented>0?`민감도가 <b>${Math.round((s1-s0)*100)}%p</b> 오르면 ${N.toLocaleString()}명 중 <b>${fmt(extra)}명</b>을 더 찾지만, 나쁜 결과를 막는 사람은 <b>${fmt(prevented)}명</b>이다. 한 명을 더 막으려면 새 검사로 바꿔 약 <b>${Math.round(N/prevented).toLocaleString()}명</b>을 검사해야 한다. 각 고리의 값은 가상 입력이다.`:'어느 고리가 0이면 정확도가 아무리 올라도 환자 결과는 바뀌지 않는다.';
+  }
+  ['chN','chP','chSe0','chSe1','chM','chF','chA'].forEach(id=>g(id).addEventListener('input',draw));
+  draw();
+})();
+EB.sorter(document.getElementById('sim-sort'));
+</script>
+</body>
+</html>

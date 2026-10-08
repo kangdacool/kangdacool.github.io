@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목표 제품 특성(TPP) · EvidenceBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .flow4{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin:20px 0}
+  .flow4 .st{background:var(--bg-elev);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative}
+  .flow4 .st:not(:last-child):after{content:"→";position:absolute;right:-20px;top:40%;color:var(--text-faint);font-size:18px}
+  .flow4 .st .n{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .flow4 .st b{display:block;margin:2px 0 4px}
+  .flow4 .st span{font-size:14px;color:var(--text-dim);line-height:1.55;display:block}
+  .flow4 .st.hl{border-color:var(--accent-2);background:var(--accent-2-soft)}
+  @media (max-width:760px){.flow4{grid-template-columns:1fr 1fr}.flow4 .st:nth-child(2):after{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 04</div>
+  <h1>목표 제품 특성(TPP)</h1>
+  <p class="lead">TPP(target product profile)는 개발하려는 의약품, 백신, 진단검사, 의료기기가 특정 질병과 대상 집단에서 갖춰야 할 특성을 항목별 최소 허용 수준과 최적 목표로 미리 정해 두는 개발 계획 문서다. 통계 개념은 아니지만, 진단검사 TPP의 정확도 목표는 앞 장의 우도비와 검사 후 확률로 읽어야 뜻이 분명해진다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>TPP의 정의와 최소·최적의 2단 구조를 설명할 수 있다.</li>
+      <li>스폰서가 쓰는 TPP(FDA 맥락)와 공공기관이 쓰는 TPP(WHO 맥락)를 구분할 수 있다.</li>
+      <li>진단검사 TPP의 민감도·특이도 목표를 ROC 공간과 사용 위치별 검사 후 확률로 해석할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>정의와 2단 구조</h2>
+  <p>WHO는 TPP를 특정 질병이나 상태를 겨냥한 목표 제품의 최소 특성과 선호(최적) 특성을 기술한 문서로 정의한다. 항목은 대개 임상 적응증, 대상 인구집단, 요구 효능, 안전성, 제형, 안정성과 보관 등이다. 핵심은 항목마다 두 개의 목표를 두는 구조다. WHO 결핵 예방치료 TPP를 예로 들면, “최소 요구”는 현재 표준치료와 같거나 더 나은 수준으로 전 세계 보건 효과를 위해 받아들일 수 있는 하한이고, “최적 요구”는 보건 효과를 넓히고 앞당기는 데 필요한 이상적 제품의 성능이다.</p>
+  <p>TPP는 검사가 찾아내는 대상이 아니라, 검사를 만들기 전에 그 검사가 도달해야 할 목표를 적어 둔 문서다. 진단검사에서는 다음 순서로 쓰인다.</p>
+  <div class="flow4">
+    <div class="st hl"><div class="n">STEP 1</div><b>TPP 작성</b><span>정확도, 결과 시간, 검체, 설치 수준, 가격의 최소·최적 목표를 정함</span></div>
+    <div class="st"><div class="n">STEP 2</div><b>검사 개발</b><span>개발자가 목표에 맞춰 검사를 만듦</span></div>
+    <div class="st"><div class="n">STEP 3</div><b>진단 정확도 연구</b><span>실제 민감도·특이도와 LR을 측정 (2장)</span></div>
+    <div class="st"><div class="n">STEP 4</div><b>대조</b><span>측정값이 최소 기준을 넘는지, 최적에 얼마나 가까운지 판단</span></div>
+  </div>
+
+  <h2 id="s2"><span class="num">02</span>작성 주체의 두 갈래</h2>
+  <p>TPP를 규정하는 것은 작성 주체가 아니라 형식이다. 다만 공개 문헌에서 접하는 TPP가 주로 WHO 것이라 공공기관 문서처럼 보이기 쉽다.</p>
+  <div class="grid2">
+    <div class="card"><div class="eyebrow">Sponsor · FDA</div><h3 style="margin:.4em 0">기업이 쓰는 TPP</h3><p class="dim" style="font-size:15px;margin:0">FDA는 2007년 3월 “Target Product Profile: A Strategic Development Process Tool” 지침 초안을 냈다. 스폰서가 작성해 FDA 심사팀과 자발적으로 공유하며, 개발 프로그램을 허가 라벨 개념으로 요약하는 형식이다. 규제기관이 쓰는 문서가 아니라 규제기관에 보여 주는 문서이고, 대부분 공개되지 않는다.</p></div>
+    <div class="card"><div class="eyebrow" style="color:var(--accent-2)">Public · WHO</div><h3 style="margin:.4em 0">공공기관이 쓰는 TPP</h3><p class="dim" style="font-size:15px;margin:0">WHO는 TPP를 보건의료 제품 연구개발을 이끄는 계획 도구로 두고, 투자 위험을 낮추는 것을 목적으로 든다. 시장 유인이 약한 질환에서 “이런 제품이 필요하다”는 수요 신호다. 비슷한 문서인 PPC(preferred product characteristics)는 선호만 밝히고 최소 허용 기준은 두지 않는다.</p></div>
+  </div>
+
+  <h2 id="s3"><span class="num">03</span>진단검사 TPP의 항목</h2>
+  <p>WHO의 결핵 치료 모니터링 검사 TPP는 가장 중요한 특성으로 다음 다섯 가지를 꼽는다. 정확도는 그중 하나일 뿐이고, 검사가 실제로 쓰일 자리를 정하는 항목이 나란히 놓인다.</p>
+  <div class="tblwrap"><table class="tbl">
+    <tr><th>특성</th><th>문서의 목표</th></tr>
+    <tr><td><b>진단 정확도</b></td><td>높은 민감도와 특이도</td></tr>
+    <tr><td><b>결과까지 걸리는 시간</b></td><td>최적 2시간 이내, 늦어도 1일 이내</td></tr>
+    <tr><td><b>검체</b></td><td>소변, 호흡, 모세혈관 혈액처럼 덜 침습적이고 얻기 쉬운 검체, 또는 객담을 넘어서는 호흡기 검체</td></tr>
+    <tr><td><b>설치 수준</b></td><td>이상적으로는 검사실이 없는 말단 의료기관</td></tr>
+    <tr><td><b>가격</b></td><td>저·중소득 국가가 감당할 수 있고 넓고 공평한 접근과 확대가 가능한 수준</td></tr>
+  </table></div>
+
+  <h2 id="s4"><span class="num">04</span>ROC 공간 위의 목표</h2>
+  <p>민감도와 특이도의 최소·최적 목표는 ROC 공간에서 두 개의 직사각형이 된다. 후보 검사의 측정값은 점 하나와 신뢰구간 십자로 놓인다. 표본이 작으면 점추정치가 목표 안에 있어도 신뢰구간 하한은 목표 밖으로 나갈 수 있다.</p>
+
+  <div class="sim" id="sim-roc">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">TPP 목표 영역과 후보 검사</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <svg id="rocSvg" viewBox="0 0 520 470" style="width:100%;display:block" role="img" aria-label="ROC 공간의 TPP 목표 영역"></svg>
+        <div id="rocVerdict"></div>
+      </div>
+      <div class="sim-ctrl">
+        <div class="dim" style="font-size:13px;margin-bottom:6px">TPP 목표</div>
+        <label class="ctrl"><div class="lab">최소 민감도·특이도 <b id="tMinV"></b></div><input type="range" id="tMinSe" min="50" max="99" step="1" value="80"><input type="range" id="tMinSp" min="50" max="99" step="1" value="90" style="margin-top:10px"></label>
+        <label class="ctrl"><div class="lab">최적 민감도·특이도 <b id="tOptV"></b></div><input type="range" id="tOptSe" min="50" max="99" step="1" value="95"><input type="range" id="tOptSp" min="50" max="99" step="1" value="98" style="margin-top:10px"></label>
+        <div class="dim" style="font-size:13px;margin:12px 0 6px">후보 검사의 정확도 연구</div>
+        <label class="ctrl"><div class="lab">관찰 민감도·특이도 <b id="cV"></b></div><input type="range" id="cSe" min="50" max="99.5" step="0.5" value="88"><input type="range" id="cSp" min="50" max="99.5" step="0.5" value="94" style="margin-top:10px"></label>
+        <label class="ctrl"><div class="lab">환자 수 · 비환자 수 <b id="cNV"></b></div><input type="range" id="cN1" min="20" max="1000" step="10" value="80"><input type="range" id="cN0" min="20" max="2000" step="10" value="300" style="margin-top:10px"></label>
+        <label class="toggle"><input type="checkbox" id="cIso" checked> 최소 목표의 LR 등고선</label>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">후보 LR+ / LR−</div><div class="v" id="cLR" style="font-size:18px"></div></div>
+      <div><div class="k">최소 목표의 LR+ / LR−</div><div class="v" id="tLR" style="font-size:18px"></div></div>
+      <div><div class="k">민감도 95% CI</div><div class="v" id="cCI1" style="font-size:18px"></div></div>
+      <div><div class="k">특이도 95% CI</div><div class="v" id="cCI0" style="font-size:18px"></div></div>
+    </div>
+  </div>
+
+  <h2 id="s5"><span class="num">05</span>사용 위치와 검사 후 확률</h2>
+  <p>같은 민감도·특이도 목표라도 검사가 어디에 쓰이느냐에 따라 의미가 달라진다. 유병률이 낮은 선별 자리에서는 양성 결과의 의미가, 유병률이 높은 확진 자리에서는 음성 결과의 의미가 문제가 된다. 그래서 진단 TPP를 만들 때는 사용 위치와 그 자리의 검사 전 확률을 먼저 정의해야 한다. 위 실험의 후보 검사를 두 자리에 놓아 본다.</p>
+
+  <div class="sim" id="sim-use">
+    <div class="sim-head"><span class="pill exp">EXPERIMENT</span><span class="title">같은 검사, 다른 사용 위치</span></div>
+    <div class="sim-body">
+      <div class="sim-view"><div class="bars2" id="useBars"></div></div>
+      <div class="sim-ctrl">
+        <div class="seg" id="usePre"><button data-p="1">선별 1%</button><button class="on" data-p="10">분류 10%</button><button data-p="50">확진 50%</button></div>
+        <label class="ctrl" style="margin-top:14px"><div class="lab">검사 전 확률 <b id="usePV"></b></div><input type="range" id="useP" min="0.5" max="80" step="0.5" value="10"></label>
+      </div>
+    </div>
+    <div class="sim-foot" id="useFoot"></div>
+  </div>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="2">
+    <div class="q"><span class="qn">Q1</span>TPP와 PPC의 차이로 맞는 것은?</div>
+    <div class="opts">
+      <button class="opt">TPP는 기업만, PPC는 WHO만 쓴다</button>
+      <button class="opt">TPP는 진단검사, PPC는 백신에만 쓴다</button>
+      <button class="opt">TPP는 최소 기준을 포함하고, PPC는 선호만 밝힌다</button>
+      <button class="opt">둘은 같은 문서의 다른 이름이다</button>
+    </div>
+    <div class="exp">WHO 설명에 따르면 TPP는 최적 특성과 함께 최소 필수 특성을 담고, PPC는 WHO의 선호를 밝히되 최소 허용 기준은 두지 않는다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q2</span>후보 검사의 민감도 점추정치는 최소 목표를 넘지만 95% 신뢰구간 하한은 목표 아래다. 가장 먼저 할 일은?</div>
+    <div class="opts">
+      <button class="opt">환자 표본을 늘려 추정을 정밀하게 한다</button>
+      <button class="opt">목표를 점추정치에 맞춰 낮춘다</button>
+      <button class="opt">특이도를 올려 보완한다</button>
+      <button class="opt">목표를 달성한 것으로 보고한다</button>
+    </div>
+    <div class="exp">불확실성이 목표 경계를 가로지르는 상태다. 목표를 바꾸지 않고, 환자 수를 늘려 신뢰구간을 좁히는 것이 먼저다. 실험에서 환자 수 막대를 올리면 십자가 줄어드는 것을 볼 수 있다.</div>
+  </div>
+  <div class="quiz" data-ans="3">
+    <div class="q"><span class="qn">Q3</span>FDA 맥락의 TPP에 대한 설명으로 맞는 것은?</div>
+    <div class="opts">
+      <button class="opt">FDA가 작성해 기업에 배포한다</button>
+      <button class="opt">허가 신청 시 반드시 제출해야 한다</button>
+      <button class="opt">진단검사에만 쓴다</button>
+      <button class="opt">스폰서가 작성해 심사팀과 자발적으로 공유한다</button>
+    </div>
+    <div class="exp">FDA의 2007년 지침 초안은 TPP를 스폰서가 작성해 심사팀과 자발적으로 공유하는, 허가 라벨 개념으로 개발 프로그램을 요약한 문서로 설명한다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+<script src="assets/common.js"></script>
+<script>
+const CAND={se:.88,sp:.94};
+/* ---------- ROC targets ---------- */
+(function(){
+  const {S,wilson}=EB; const g=id=>document.getElementById(id); const svg=g('rocSvg');
+  const ox=70,oy=420,W=400,H=400;
+  // zoomed axes: x = 1-spec in [0,0.5], y = sens in [0.5,1]
+  const FPM=0.3, SEM=0.6; const X=fp=>ox+Math.min(fp,FPM)/FPM*W, Y=se=>oy-(Math.max(se,SEM)-SEM)/(1-SEM)*H;
+  function draw(){
+    let mSe=+g('tMinSe').value/100,mSp=+g('tMinSp').value/100,oSe=+g('tOptSe').value/100,oSp=+g('tOptSp').value/100;
+    if(oSe<mSe){oSe=mSe;g('tOptSe').value=Math.round(mSe*100)} if(oSp<mSp){oSp=mSp;g('tOptSp').value=Math.round(mSp*100)}
+    const cSe=+g('cSe').value/100,cSp=+g('cSp').value/100,n1=+g('cN1').value,n0=+g('cN0').value;
+    CAND.se=cSe;CAND.sp=cSp; document.dispatchEvent(new Event('cand'));
+    g('tMinV').textContent=Math.round(mSe*100)+'% · '+Math.round(mSp*100)+'%';
+    g('tOptV').textContent=Math.round(oSe*100)+'% · '+Math.round(oSp*100)+'%';
+    g('cV').textContent=(cSe*100).toFixed(1)+'% · '+(cSp*100).toFixed(1)+'%';
+    g('cNV').textContent=n1+' · '+n0;
+    svg.innerHTML='';
+    for(let i=0;i<=6;i++){const fp=i*0.05;
+      S('line',{x1:X(fp),x2:X(fp),y1:Y(SEM),y2:Y(1),class:'gridline'},svg);
+      S('text',{x:X(fp),y:oy+18,'text-anchor':'middle','font-size':11,class:'svgmono'},svg).textContent=fp.toFixed(2);}
+    for(let i=0;i<=8;i++){const se=SEM+i*0.05;
+      S('line',{x1:X(0),x2:X(FPM),y1:Y(se),y2:Y(se),class:'gridline'},svg);
+      S('text',{x:ox-8,y:Y(se)+4,'text-anchor':'end','font-size':11,class:'svgmono'},svg).textContent=se.toFixed(2);}
+    S('text',{x:ox+W/2,y:oy+40,'text-anchor':'middle','font-size':12.5,class:'svgdim'},svg).textContent='1 − 특이도 (0~0.3 구간 확대)';
+    S('text',{x:22,y:oy-H/2,'text-anchor':'middle','font-size':12.5,class:'svgdim',transform:`rotate(-90 22 ${oy-H/2})`},svg).textContent='민감도 (0.6~1 구간 확대)';
+    // regions
+    S('rect',{x:X(0),y:Y(1),width:X(1-mSp)-X(0),height:Y(mSe)-Y(1),fill:'var(--warn-soft)',stroke:'var(--warn)','stroke-width':1.5},svg);
+    S('rect',{x:X(0),y:Y(1),width:X(1-oSp)-X(0),height:Y(oSe)-Y(1),fill:'var(--ok-soft)',stroke:'var(--ok)','stroke-width':1.8},svg);
+    S('text',{x:X(1-mSp)-6,y:Y(mSe)-8,'text-anchor':'end','font-size':12,'font-weight':700,fill:'var(--warn)'},svg).textContent='최소 목표';
+    S('text',{x:X(0)+6,y:Y(1)+16,'font-size':12,'font-weight':700,fill:'var(--ok)'},svg).textContent='최적';
+    if(g('cIso').checked){
+      const lrp=mSe/(1-mSp), lrn=(1-mSe)/mSp;
+      const clipSeg=(x0,y0,x1,y1)=>{ // Liang-Barsky in data space
+        let t0=0,t1=1;const dx=x1-x0,dy=y1-y0;
+        const P=[-dx,dx,-dy,dy],Q=[x0-0,FPM-x0,y0-SEM,1-y0];
+        for(let k=0;k<4;k++){if(P[k]===0){if(Q[k]<0)return null}else{const r=Q[k]/P[k];if(P[k]<0){if(r>t1)return null;if(r>t0)t0=r}else{if(r<t0)return null;if(r<t1)t1=r}}}
+        return [x0+t0*dx,y0+t0*dy,x0+t1*dx,y0+t1*dy];
+      };
+      const L1=clipSeg(0,0,1/lrp,1), L2=clipSeg(0,1-lrn,1,1);
+      if(L1){S('line',{x1:X(L1[0]),y1:Y(L1[1]),x2:X(L1[2]),y2:Y(L1[3]),stroke:'var(--accent-2)','stroke-width':1.4,'stroke-dasharray':'6 4'},svg);
+        S('text',{x:X(L1[2])+4,y:Y(L1[3])+14,'font-size':11.5,fill:'var(--accent-2)'},svg).textContent='LR+ '+lrp.toFixed(1);}
+      if(L2){S('line',{x1:X(L2[0]),y1:Y(L2[1]),x2:X(L2[2]),y2:Y(L2[3]),stroke:'var(--accent)','stroke-width':1.4,'stroke-dasharray':'6 4'},svg);
+        S('text',{x:X(L2[2])-4,y:Y(L2[3])-6,'text-anchor':'end','font-size':11.5,fill:'var(--accent)'},svg).textContent='LR− '+lrn.toFixed(2);}
+    }
+    const [l1,u1]=wilson(Math.round(cSe*n1),n1),[l0,u0]=wilson(Math.round(cSp*n0),n0);
+    const cx=X(1-cSp),cy=Y(cSe);
+    S('line',{x1:X(1-u0),x2:X(1-l0),y1:cy,y2:cy,stroke:'var(--text)','stroke-width':2},svg);
+    S('line',{x1:cx,x2:cx,y1:Y(l1),y2:Y(u1),stroke:'var(--text)','stroke-width':2},svg);
+    S('circle',{cx,cy,r:7,fill:'var(--accent)',stroke:'var(--bg-elev)','stroke-width':2.5},svg);
+    S('text',{x:cx+10,y:cy-10,'font-size':12.5,'font-weight':700,class:'svgtext'},svg).textContent='후보 검사';
+    g('cLR').textContent=(cSe/(1-cSp)).toFixed(1)+' / '+((1-cSe)/cSp).toFixed(2);
+    g('tLR').textContent=(mSe/(1-mSp)).toFixed(1)+' / '+((1-mSe)/mSp).toFixed(2);
+    g('cCI1').textContent=(l1*100).toFixed(0)+'–'+(u1*100).toFixed(0)+'%';
+    g('cCI0').textContent=(l0*100).toFixed(0)+'–'+(u0*100).toFixed(0)+'%';
+    const inOpt=cSe>=oSe&&cSp>=oSp, inMin=cSe>=mSe&&cSp>=mSp, lbMin=l1>=mSe&&l0>=mSp;
+    let cls,msg;
+    if(inOpt&&l1>=oSe&&l0>=oSp){cls='pass';msg='점추정치와 신뢰구간 하한 모두 최적 목표 안'}
+    else if(inMin&&lbMin){cls='pass';msg='신뢰구간 하한까지 최소 목표 충족'+(inOpt?', 점추정치는 최적 목표 안':'')}
+    else if(inMin){cls='mid';msg='점추정치는 최소 목표 안, 신뢰구간 하한은 목표 밖'}
+    else {cls='fail';msg='점추정치가 최소 목표에 못 미침'}
+    g('rocVerdict').innerHTML=`<span class="verdict ${cls}">${msg}</span>`;
+  }
+  ['tMinSe','tMinSp','tOptSe','tOptSp','cSe','cSp','cN1','cN0','cIso'].forEach(id=>g(id).addEventListener('input',draw));
+  draw();
+})();
+/* ---------- use position ---------- */
+(function(){
+  const g=id=>document.getElementById(id);
+  function draw(){
+    const p=+g('useP').value/100; g('usePV').textContent=(p*100).toFixed(1)+'%';
+    const {se,sp}=CAND, o=p/(1-p);
+    const pp=EB.prob(o*se/(1-sp)), pn=EB.prob(o*(1-se)/sp);
+    const rows=[['검사 전 확률',p,'var(--text-faint)'],['양성 후 확률 (PPV)',pp,'var(--accent-2)'],['음성 후 확률',pn,'var(--accent)'],['음성 후 비질병 확률 (NPV)',1-pn,'var(--ok)']];
+    g('useBars').innerHTML=rows.map(r=>`<div class="row"><div>${r[0]}</div><div class="track"><div class="fill" style="width:${(r[1]*100).toFixed(1)}%;background:${r[2]}"></div></div><div class="val">${(r[1]*100).toFixed(1)}%</div></div>`).join('');
+    const fpPer=(1-pp);
+    g('useFoot').innerHTML=`후보 검사(민감도 ${(se*100).toFixed(1)}%, 특이도 ${(sp*100).toFixed(1)}%)를 검사 전 확률 ${(p*100).toFixed(1)}% 자리에 쓰면, 양성 판정 중 <b>${(fpPer*100).toFixed(0)}%</b>가 거짓양성이고, 음성 판정 뒤에도 <b>${(pn*100).toFixed(1)}%</b>의 확률이 남는다.`;
+  }
+  g('useP').addEventListener('input',()=>{document.querySelectorAll('#usePre button').forEach(b=>b.classList.remove('on'));draw()});
+  document.querySelectorAll('#usePre button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#usePre button').forEach(x=>x.classList.toggle('on',x===b));g('useP').value=b.dataset.p;draw()});
+  document.addEventListener('cand',draw);
+  draw();
+})();
+</script>
+</body>
+</html>

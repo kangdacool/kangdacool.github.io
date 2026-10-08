@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>우도비와 베이즈 갱신 · EvidenceBook</title>
+<meta name="author" content="kangdacool">
+<meta name="theme-color" content="#F6F4EF">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .school{border-top:4px solid var(--accent)}
+  .school.b{border-top-color:var(--accent-2)} .school.c{border-top-color:var(--ok)}
+  .school b{display:block;font-size:17px;margin-bottom:4px}
+  .school p{font-size:15px;color:var(--text-dim);margin:.4em 0;line-height:1.7}
+  .steprow{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-family:var(--mono);font-size:14px}
+  .steprow .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;white-space:nowrap}
+  .steprow .box small{display:block;font-family:var(--font);font-size:11.5px;color:var(--text-faint)}
+  .steprow .op{color:var(--text-faint);text-align:center}
+</style>
+</head>
+<body>
+<div class="page">
+<article class="content">
+  <div class="eyebrow">Chapter 01</div>
+  <h1>우도비와 베이즈 갱신</h1>
+  <p class="lead">진단검사의 LR+와 LR−는 민감도와 특이도를 한 숫자로 묶어, 검사 전에 가졌던 확률을 검사 후 확률로 바꾸는 데 쓴다. 이 장에서는 두 숫자의 정의, 검사 결과에 맞춰 둘 중 하나를 고르는 이유, 오즈에 곱하는 갱신 과정, 그리고 이 도구가 빈도주의와 베이즈주의 사이 어디에 서는지를 정리한다.</p>
+
+  <div class="goals">
+    <div class="t">이 장에서 배우는 것</div>
+    <ul>
+      <li>진단 우도비(LR+, LR−)와 우도비 검정(LRT)을 구분할 수 있다.</li>
+      <li>관찰된 검사 결과로 LR의 종류가 정해지고, 모르는 질병 여부는 분자와 분모의 두 가설로 들어간다는 점을 설명할 수 있다.</li>
+      <li>검사 전 확률을 오즈로 바꾸고 LR을 곱해 검사 후 확률을 구할 수 있다.</li>
+      <li>여러 검사의 LR을 곱할 때 필요한 조건부 독립 가정과, 그 가정이 깨질 때의 결과를 설명할 수 있다.</li>
+    </ul>
+  </div>
+
+  <h2 id="s1"><span class="num">01</span>이름이 같은 두 가지 우도비</h2>
+  <p>“우도비”라는 이름은 두 가지 다른 도구에 쓰인다. 둘 다 우도의 비라는 점만 같고, 비교하는 대상과 쓰임은 다르다.</p>
+  <div class="tblwrap"><table class="tbl">
+    <tr><th></th><th>진단 우도비 (LR+, LR−)</th><th>우도비 검정 (LRT)</th></tr>
+    <tr><td><b>비교 대상</b></td><td>질병 있음 대 없음, 두 개의 단순가설</td><td>중첩된 두 모형, 제약 모형 대 전체 모형</td></tr>
+    <tr><td><b>비의 구성</b></td><td>검사 결과가 나올 조건부 확률의 비</td><td>각 모형에서 최대화한 우도의 비</td></tr>
+    <tr><td><b>산출</b></td><td>사전 오즈를 사후 오즈로 갱신</td><td>−2 log(L₀/L₁)을 카이제곱 분포에 대조해 p값 (Wilks 1938)</td></tr>
+    <tr><td><b>학파</b></td><td>쓰는 방식에 따라 달라짐, 형식상 베이즈 인자</td><td>빈도주의 가설검정</td></tr>
+  </table></div>
+  <p>이 교재에서 “LR”은 앞의 진단 우도비만을 뜻한다.</p>
+
+  <h2 id="s2"><span class="num">02</span>LR+와 LR−의 정의</h2>
+  <div class="formula">
+    LR+ = P(T+ | D+) / P(T+ | D−) = 민감도 / (1 − 특이도)<br>
+    LR− = P(T− | D+) / P(T− | D−) = (1 − 민감도) / 특이도<br>
+    <span class="c">LR+ : 양성 결과가 비질병자보다 질병자에게서 몇 배 더 잘 나오는가</span><br>
+    <span class="c">LR− : 음성 결과가 질병자에게서 나올 가능성이 비질병자 대비 얼마인가 (1보다 작을수록 배제력이 강함)</span>
+  </div>
+  <p>민감도와 특이도는 질병 여부가 확정된 사람들, 즉 진단정확도 연구의 표본에서 미리 구해 둔 값이다. 그래서 눈앞 환자의 질병 여부를 몰라도 LR은 계산할 수 있다. 아래 실험에서 1000명을 한 칸씩 그려 두 숫자가 실제로 무엇을 세는지 확인한다.</p>
+
+  <div class="sim" id="sim-icons">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">1000명 아이콘 배열: 유병률·민감도·특이도</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="icons" id="icons"></div>
+        <div class="legend"><span><i style="background:var(--tp)"></i>참양성</span><span><i style="background:var(--fn)"></i>거짓음성</span><span><i style="background:var(--fp)"></i>거짓양성</span><span><i style="background:var(--tn);border:1px solid var(--border)"></i>참음성</span></div>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">유병률 <b id="icPrevV"></b></div><input type="range" id="icPrev" min="0.5" max="50" step="0.5" value="10"></label>
+        <label class="ctrl"><div class="lab">민감도 <b id="icSeV"></b></div><input type="range" id="icSe" min="50" max="99.5" step="0.5" value="90"></label>
+        <label class="ctrl"><div class="lab">특이도 <b id="icSpV"></b></div><input type="range" id="icSp" min="50" max="99.5" step="0.5" value="90"></label>
+        <div class="dim" style="font-size:13px;margin:4px 0 6px">결과를 알고 난 뒤 보이는 사람</div>
+        <div class="seg" id="icFocus"><button class="on" data-f="all">전체</button><button data-f="pos">양성만</button><button data-f="neg">음성만</button></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">양성 판정</div><div class="v" id="icNpos"></div></div>
+      <div><div class="k">양성 중 실제 환자 (PPV)</div><div class="v" id="icPPV" style="color:var(--tp)"></div></div>
+      <div><div class="k">음성 중 실제 비환자 (NPV)</div><div class="v" id="icNPV"></div></div>
+      <div><div class="k">LR+ / LR−</div><div class="v" id="icLR"></div></div>
+    </div>
+    <div class="sim-foot" id="icFoot"></div>
+  </div>
+  <p>유병률 막대를 1% 근처로 내려 보면, 민감도와 특이도가 그대로인데도 양성 판정의 대부분이 거짓양성으로 바뀐다. 반면 LR+와 LR−는 유병률을 움직여도 변하지 않는다. LR은 검사의 성질이고, PPV와 NPV는 검사와 집단을 함께 반영한 값이다. “양성만” 버튼은 다음 절의 요점을 미리 보여 준다. 결과가 양성으로 나오면 우리가 볼 수 있는 사람은 진한 파랑과 붉은색 칸뿐이다. 그 안에서 참양성 대 거짓양성의 비는 사전 오즈 × LR+로 정해진다. 4절의 공식이 바로 이것이다.</p>
+
+  <h2 id="s3"><span class="num">03</span>검사 결과에 맞춘 LR 선택</h2>
+  <p>LR+와 LR−는 동시에 쓰지 않는다. 양성이 나왔으면 LR+, 음성이 나왔으면 LR−를 곱한다. 질병 여부를 모르는데 어떻게 쓰는지가 헷갈리는 지점인데, LR은 바로 그 상황을 위한 도구다. LR은 “이 사람은 환자다”라는 사실을 쓰지 않고, 두 가설을 각각 가정해 지금 나온 결과가 어느 쪽에서 더 잘 나오는지를 비교한다.</p>
+  <div class="grid2">
+    <div class="card"><div class="eyebrow">이미 아는 것</div><p style="margin:.4em 0 0;font-size:15.5px">관찰된 <b>검사 결과</b>. 양성인지 음성인지가 LR의 종류를 정한다.</p></div>
+    <div class="card"><div class="eyebrow" style="color:var(--accent-2)">아직 모르는 것</div><p style="margin:.4em 0 0;font-size:15.5px"><b>질병 여부</b>. “환자라면”과 “비환자라면”이라는 두 가설로 분자와 분모에 들어간다.</p></div>
+  </div>
+
+  <h2 id="s4"><span class="num">04</span>오즈 형태의 베이즈 정리</h2>
+  <div class="formula">사후 오즈 = 사전 오즈 × LR<br><span class="c">확률 p → 오즈 p/(1−p) → LR을 곱함 → 오즈 o → 확률 o/(1+o)</span></div>
+  <p>Fagan(1975)의 노모그램은 이 계산을 자 하나로 바꾼 그림이다. 세 눈금이 로그 오즈 척도로 놓여 있어서, 검사 전 확률과 LR을 잇는 직선을 그대로 연장하면 검사 후 확률이 읽힌다. 왼쪽 눈금의 점을 끌거나 막대를 움직여 본다.</p>
+
+  <div class="sim" id="sim-fagan">
+    <div class="sim-head"><span class="pill">SIMULATOR</span><span class="title">Fagan 노모그램: 검사 전 확률을 끌어 보기</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <svg id="fagan" viewBox="0 0 460 580" style="width:100%;display:block;touch-action:none" role="img" aria-label="Fagan 노모그램"></svg>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">검사 전 확률 <b id="fgPreV"></b></div><input type="range" id="fgPre" min="0" max="1000" step="1" value="500"></label>
+        <label class="ctrl"><div class="lab">민감도 <b id="fgSeV"></b></div><input type="range" id="fgSe" min="50" max="99.5" step="0.5" value="85"></label>
+        <label class="ctrl"><div class="lab">특이도 <b id="fgSpV"></b></div><input type="range" id="fgSp" min="50" max="99.5" step="0.5" value="90"></label>
+        <div class="dim" style="font-size:13px;margin:4px 0 6px">관찰된 검사 결과</div>
+        <div class="seg" id="fgRes"><button class="on" data-r="pos">양성 → LR+</button><button data-r="neg">음성 → LR−</button></div>
+      </div>
+    </div>
+    <div class="sim-foot"><div class="steprow" id="fgSteps"></div></div>
+  </div>
+  <p>같은 검사라도 검사 전 확률이 낮으면 양성 결과 뒤에도 확률이 크게 오르지 않는다. 진단 추론에서 병력과 진찰로 검사 전 확률을 먼저 세우는 이유가 여기에 있다. 같은 LR이라도 결정이 바뀌는지는 검사 전 확률이 어디에 있는지, 그리고 치료를 시작하거나 검사를 멈추는 문턱이 어디에 있는지에 달려 있다.</p>
+
+  <h2 id="s5"><span class="num">05</span>연속 검사와 조건부 독립</h2>
+  <p>검사를 여러 개 연달아 하면 각 결과에 해당하는 LR을 차례로 곱해 나간다. 이 곱셈은 질병 상태가 같을 때 두 검사 결과가 서로 독립이라는 가정, 즉 <b>조건부 독립</b>을 전제로 한다. 같은 병리를 보는 두 검사, 예를 들어 같은 병변을 보는 두 영상 검사는 이 가정이 깨지기 쉽다. 아래에서 두 검사가 모두 양성일 때 순진한 곱셈과 실제 값을 비교한다.</p>
+
+  <div class="sim" id="sim-seq">
+    <div class="sim-head"><span class="pill exp">EXPERIMENT</span><span class="title">두 검사가 모두 양성일 때: 곱셈 대 실제</span></div>
+    <div class="sim-body">
+      <div class="sim-view">
+        <div class="bars2" id="sqBars"></div>
+        <div class="formula" id="sqF" style="font-size:13.5px"></div>
+      </div>
+      <div class="sim-ctrl">
+        <label class="ctrl"><div class="lab">검사 전 확률 <b id="sqPreV"></b></div><input type="range" id="sqPre" min="1" max="60" step="1" value="10"></label>
+        <label class="ctrl"><div class="lab">검사 A 민감도·특이도 <b id="sqAV"></b></div><input type="range" id="sqA" min="60" max="98" step="1" value="80"></label>
+        <label class="ctrl"><div class="lab">검사 B 민감도·특이도 <b id="sqBV"></b></div><input type="range" id="sqB" min="60" max="98" step="1" value="80"></label>
+        <label class="ctrl"><div class="lab">조건부 상관 ρ <b id="sqRV"></b></div><input type="range" id="sqR" min="0" max="0.9" step="0.05" value="0.5"></label>
+      </div>
+    </div>
+    <div class="sim-foot" id="sqFoot"></div>
+  </div>
+  <p>ρ를 0으로 두면 두 값이 일치한다. ρ를 올리면 두 번째 검사가 첫 번째 검사의 정보를 상당 부분 되풀이하게 되므로, 실제 검사 후 확률은 곱셈으로 얻은 값보다 낮아진다. 상관이 있는 검사를 연달아 하면서 LR을 그대로 곱하면 확신이 과대평가되는 방향으로 틀린다.</p>
+
+  <h2 id="s6"><span class="num">06</span>학파별 위치</h2>
+  <p>LR 자체는 어느 학파에도 속하지 않는다. 사전확률을 무엇으로 보느냐에 따라 해석이 갈린다.</p>
+  <div class="grid3">
+    <div class="card school"><b>빈도주의</b><p>LR 값은 진단정확도 연구에서 민감도·특이도를 추정해 얻으므로 사전분포가 필요 없다. 신뢰구간도 대개 빈도주의 방법으로 구한다.</p><p>사전확률이 해당 집단의 유병률이면, 사후 오즈 = 사전 오즈 × LR은 빈도주의에서도 문제없는 확률 계산이다.</p></div>
+    <div class="card school b"><b>베이즈주의</b><p>사전확률을 눈앞의 환자 한 명이 이 병일 가능성에 대한 임상의의 판단으로 쓰면, 이 계산은 주관적 확률을 갱신하는 베이지안 추론이 된다.</p><p>D+ 대 D−는 두 개의 단순가설이므로 이때 LR은 베이즈 인자와 같다. 임상 진단 추론은 대부분 이 방식이다.</p></div>
+    <div class="card school c"><b>우도주의</b><p>우도비를 p값으로 바꾸지도, 사전확률과 곱하지도 않고, 그 자체를 두 가설 사이의 증거의 크기로 읽는 입장이다(Royall 1997).</p><p>이 관점에서 진단 LR은 증거의 강도를 가장 그대로 드러내는 지표다.</p></div>
+  </div>
+
+  <h2 id="quiz">확인 퀴즈</h2>
+  <div class="quiz" data-ans="1">
+    <div class="q"><span class="qn">Q1</span>검사 결과가 음성으로 나왔다. 검사 전 오즈에 무엇을 곱하는가?</div>
+    <div class="opts">
+      <button class="opt">LR+와 LR−의 평균</button>
+      <button class="opt">LR−</button>
+      <button class="opt">LR+의 역수</button>
+      <button class="opt">질병 여부를 알 때까지 곱할 수 없음</button>
+    </div>
+    <div class="exp">관찰된 결과가 LR의 종류를 정한다. 음성이면 LR− = (1 − 민감도)/특이도를 곱한다. 질병 여부는 모르는 채로, 분자와 분모의 두 가설로 들어간다.</div>
+  </div>
+  <div class="quiz" data-ans="3">
+    <div class="q"><span class="qn">Q2</span>유병률이 1%에서 20%로 바뀌었다. 변하지 않는 것은?</div>
+    <div class="opts">
+      <button class="opt">양성 예측도(PPV)</button>
+      <button class="opt">음성 예측도(NPV)</button>
+      <button class="opt">양성 판정 중 거짓양성의 비율</button>
+      <button class="opt">LR+</button>
+    </div>
+    <div class="exp">LR+는 민감도와 특이도만으로 정해지므로 유병률과 무관하다. PPV, NPV, 양성 판정 중 거짓양성 비율은 모두 유병률에 따라 달라진다.</div>
+  </div>
+  <div class="quiz" data-ans="0">
+    <div class="q"><span class="qn">Q3</span>같은 병변을 보는 두 영상 검사가 모두 양성이다. 두 LR+를 그대로 곱해 얻은 검사 후 확률은 대체로 어떤가?</div>
+    <div class="opts">
+      <button class="opt">실제보다 높게 나온다</button>
+      <button class="opt">실제보다 낮게 나온다</button>
+      <button class="opt">실제와 같다</button>
+      <button class="opt">방향을 알 수 없다</button>
+    </div>
+    <div class="exp">두 검사가 질병 상태를 조건으로 양의 상관을 가지면, 두 번째 양성 결과가 주는 새 정보는 단독으로 쓸 때보다 적다. 곱셈은 이를 무시하므로 확신을 과대평가한다.</div>
+  </div>
+
+  <div data-chapnav></div>
+</article>
+<aside class="toc"></aside>
+</div>
+<script src="assets/common.js"></script>
+<script>
+/* ---------- 1000 icons ---------- */
+(function(){
+  const box=document.getElementById('icons');
+  for(let i=0;i<1000;i++) box.appendChild(document.createElement('i'));
+  const cells=[...box.children]; let focus='all';
+  const pr=document.getElementById('icPrev'), se=document.getElementById('icSe'), sp=document.getElementById('icSp');
+  function draw(){
+    const P=+pr.value/100, Se=+se.value/100, Sp=+sp.value/100;
+    document.getElementById('icPrevV').textContent=(+pr.value).toFixed(1)+'%';
+    document.getElementById('icSeV').textContent=(+se.value).toFixed(1)+'%';
+    document.getElementById('icSpV').textContent=(+sp.value).toFixed(1)+'%';
+    const nD=Math.round(1000*P), tp=Math.round(nD*Se), fn=nD-tp, nN=1000-nD, tn=Math.round(nN*Sp), fp=nN-tn;
+    const seq=[...Array(tp).fill('tp'),...Array(fn).fill('fn'),...Array(fp).fill('fp'),...Array(tn).fill('tn')];
+    cells.forEach((c,i)=>c.className=seq[i]);
+    box.className='icons'+(focus==='pos'?' focus-pos':focus==='neg'?' focus-neg':'');
+    const ppv=tp/Math.max(1,tp+fp), npv=tn/Math.max(1,tn+fn);
+    const lrp=Se/(1-Se===0?1e-9:1-Sp), lrn=(1-Se)/Sp;
+    document.getElementById('icNpos').textContent=(tp+fp)+'명';
+    document.getElementById('icPPV').textContent=EB.pct(ppv);
+    document.getElementById('icNPV').textContent=EB.pct(npv);
+    document.getElementById('icLR').textContent=(Se/(1-Sp)).toFixed(1)+' / '+lrn.toFixed(2);
+    document.getElementById('icFoot').innerHTML=`환자 <b>${nD}명</b> 중 ${tp}명이 양성, 비환자 <b>${nN}명</b> 중 ${fp}명이 양성. 양성 판정 ${tp+fp}명 가운데 실제 환자는 <b>${tp}명(${EB.pct(ppv)})</b>이다.`;
+  }
+  [pr,se,sp].forEach(e=>e.addEventListener('input',draw));
+  document.querySelectorAll('#icFocus button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#icFocus button').forEach(x=>x.classList.toggle('on',x===b));focus=b.dataset.f;draw()});
+  draw();
+})();
+
+/* ---------- Fagan nomogram ---------- */
+(function(){
+  const {S}=EB; const svg=document.getElementById('fagan');
+  const xL=70,xM=230,xR=390,mid=308,a=34; // y = mid + a*logit
+  const lg=p=>Math.log(p/(1-p));
+  const yL=p=>mid+a*lg(p), yR=p=>mid-a*lg(p), yM=lr=>mid-(a/2)*Math.log(lr);
+  const PT=[0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.3,0.5,0.7,0.8,0.9,0.95,0.98,0.99,0.995,0.998,0.999];
+  const fmtP=p=>{const v=p*100;return (v<1||v>99)?String(+v.toFixed(1)):v.toFixed(0)};
+  const LRT=[0.001,0.01,0.1,0.2,0.5,1,2,5,10,100,1000];
+  const axis=(x,ticks,yf,lab,side,fmt)=>{
+    S('line',{x1:x,x2:x,y1:yf(ticks[0]),y2:yf(ticks[ticks.length-1]),class:'axisline','stroke-width':1.6},svg);
+    ticks.forEach(t=>{const y=yf(t);S('line',{x1:x-5,x2:x+5,y1:y,y2:y,class:'axisline'},svg);
+      S('text',{x:side<0?x-9:x+9,y:y+4,'text-anchor':side<0?'end':'start','font-size':11,class:'svgmono'},svg).textContent=fmt(t)});
+    S('text',{x,y:18,'text-anchor':'middle','font-size':13,'font-weight':700,class:'svgtext'},svg).textContent=lab[0];
+    S('text',{x,y:34,'text-anchor':'middle','font-size':11.5,class:'svgdim'},svg).textContent=lab[1];
+  };
+  axis(xL,PT,yL,['검사 전 확률','(%)'],-1,fmtP);
+  axis(xM,LRT,yM,['우도비','LR'],1,t=>t>=1?String(t):String(t));
+  axis(xR,PT,yR,['검사 후 확률','(%)'],1,fmtP);
+  const line=S('line',{stroke:'var(--accent-2)','stroke-width':2.6},svg);
+  const pL=S('circle',{r:9,fill:'var(--accent)',stroke:'var(--bg-elev)','stroke-width':3,style:'cursor:grab'},svg);
+  const pM=S('circle',{r:6,fill:'var(--accent-2)'},svg);
+  const pR=S('circle',{r:8,fill:'var(--accent-2)',stroke:'var(--bg-elev)','stroke-width':3},svg);
+  const tR=S('text',{'font-size':14,'font-weight':800,'font-family':'var(--mono)',fill:'var(--accent-2)'},svg);
+  const pre=document.getElementById('fgPre'), se=document.getElementById('fgSe'), sp=document.getElementById('fgSp');
+  let res='pos';
+  const toP=v=>{const L=-6.9+13.8*v/1000;return 1/(1+Math.exp(-L))}; // 0.1%..99.9%
+  const fromP=p=>Math.round((lg(p)+6.9)/13.8*1000);
+  function draw(){
+    const p=toP(+pre.value), Se=+se.value/100, Sp=+sp.value/100;
+    const lr=res==='pos'?Se/(1-Sp):(1-Se)/Sp;
+    const o=p/(1-p), o2=o*lr, p2=o2/(1+o2);
+    document.getElementById('fgPreV').textContent=(p*100).toFixed(1)+'%';
+    document.getElementById('fgSeV').textContent=(Se*100).toFixed(1)+'%';
+    document.getElementById('fgSpV').textContent=(Sp*100).toFixed(1)+'%';
+    const y1=yL(p), y3=yR(Math.min(0.9995,Math.max(0.0005,p2)));
+    line.setAttribute('x1',xL);line.setAttribute('y1',y1);line.setAttribute('x2',xR);line.setAttribute('y2',y3);
+    pL.setAttribute('cx',xL);pL.setAttribute('cy',y1);
+    pM.setAttribute('cx',xM);pM.setAttribute('cy',(y1+y3)/2);
+    pR.setAttribute('cx',xR);pR.setAttribute('cy',y3);
+    tR.setAttribute('x',xR-12);tR.setAttribute('y',y3-12);tR.setAttribute('text-anchor','end');tR.textContent=(p2*100).toFixed(1)+'%';
+    const f=(v,d=3)=>v>=100?v.toFixed(0):v.toFixed(d);
+    document.getElementById('fgSteps').innerHTML=`
+      <div class="box"><small>검사 전 확률</small>${(p*100).toFixed(1)}%</div><div class="op">→</div>
+      <div class="box"><small>사전 오즈</small>${f(o)}</div><div class="op">× ${res==='pos'?'LR+':'LR−'} ${f(lr,2)} =</div>
+      <div class="box"><small>사후 오즈</small>${f(o2)}</div><div class="op">→</div>
+      <div class="box" style="border-color:var(--accent-2)"><small>검사 후 확률</small><b style="color:var(--accent-2)">${(p2*100).toFixed(1)}%</b></div>`;
+  }
+  [pre,se,sp].forEach(e=>e.addEventListener('input',draw));
+  document.querySelectorAll('#fgRes button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#fgRes button').forEach(x=>x.classList.toggle('on',x===b));res=b.dataset.r;draw()});
+  // drag on left axis
+  let drag=false;
+  const toSvgY=e=>{const r=svg.getBoundingClientRect();return (e.clientY-r.top)*580/r.height};
+  pL.addEventListener('pointerdown',e=>{drag=true;pL.setPointerCapture(e.pointerId);svg.classList.add('dragging')});
+  pL.addEventListener('pointermove',e=>{if(!drag)return;const y=toSvgY(e);const L=(y-mid)/a;const p=1/(1+Math.exp(-Math.max(-6.9,Math.min(6.9,L))));pre.value=fromP(p);draw()});
+  pL.addEventListener('pointerup',()=>{drag=false;svg.classList.remove('dragging')});
+  pre.value=fromP(0.2);
+  draw();
+})();
+
+/* ---------- sequential tests ---------- */
+(function(){
+  const g=id=>document.getElementById(id);
+  function joint(a,b,r){ // P(both positive) for two Bernoulli with probs a,b and correlation r, clipped to Frechet bounds
+    let j=a*b+r*Math.sqrt(a*(1-a)*b*(1-b));
+    const lo=Math.max(0,a+b-1), hi=Math.min(a,b); let clip=false;
+    if(j>hi){j=hi;clip=true} if(j<lo){j=lo;clip=true}
+    return [j,clip];
+  }
+  function draw(){
+    const p=+g('sqPre').value/100, A=+g('sqA').value/100, B=+g('sqB').value/100, r=+g('sqR').value;
+    g('sqPreV').textContent=(p*100).toFixed(0)+'%'; g('sqAV').textContent=(A*100).toFixed(0)+'%'; g('sqBV').textContent=(B*100).toFixed(0)+'%'; g('sqRV').textContent=r.toFixed(2);
+    const lrA=A/(1-A), lrB=B/(1-B);
+    const o=p/(1-p);
+    const pA=EB.prob(o*lrA);
+    const naive=EB.prob(o*lrA*lrB);
+    const [jD,c1]=joint(A,B,r), [jN,c2]=joint(1-A,1-B,r);
+    const lrTrue=jD/jN, truth=EB.prob(o*lrTrue);
+    const rows=[['검사 전',p,'var(--text-faint)'],['A 양성 후',pA,'var(--blue)'],['A·B 양성, 곱셈',naive,'var(--accent-2)'],['A·B 양성, 실제',truth,'var(--accent)']];
+    g('sqBars').innerHTML=rows.map(r=>`<div class="row"><div>${r[0]}</div><div class="track"><div class="fill" style="width:${(r[1]*100).toFixed(1)}%;background:${r[2]}"></div></div><div class="val">${(r[1]*100).toFixed(1)}%</div></div>`).join('');
+    g('sqF').innerHTML=`곱셈 LR = LR<sub>A</sub>+ × LR<sub>B</sub>+ = ${lrA.toFixed(2)} × ${lrB.toFixed(2)} = <b>${(lrA*lrB).toFixed(2)}</b><br>실제 LR(++) = P(++|D+) / P(++|D−) = ${jD.toFixed(3)} / ${jN.toFixed(4)} = <b>${lrTrue.toFixed(2)}</b>`;
+    g('sqFoot').innerHTML=`편의상 각 검사의 민감도와 특이도를 같은 값으로 두고, 질병자 안과 비질병자 안에서 두 결과의 상관을 같은 ρ로 둔 단순화 모형이다.${(c1||c2)?' <b>현재 ρ가 가능한 최댓값을 넘어 결합확률을 경계값으로 잘랐다.</b>':''} 곱셈 결과와 실제 결과의 차이: <b>${((naive-truth)*100).toFixed(1)}%p</b>.`;
+  }
+  ['sqPre','sqA','sqB','sqR'].forEach(id=>g(id).addEventListener('input',draw));
+  draw();
+})();
+</script>
+</body>
+</html>
